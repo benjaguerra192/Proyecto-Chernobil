@@ -312,7 +312,7 @@
 
         <!-- Camera Rig -->
         <a-entity id="camera-rig" position="0 1.6 0">
-            <a-entity id="main-camera" camera look-controls="magicWindowTrackingEnabled: true; touchEnabled: true;">
+            <a-entity id="main-camera" camera="fov: 90" look-controls="magicWindowTrackingEnabled: true; touchEnabled: true;">
                 <!-- Reticle with Fuse Feedback -->
                 <a-entity id="cursor"
                     cursor="fuse: true; fuseTimeout: 1500"
@@ -641,8 +641,8 @@
             },
 
             createNavLinks(nav) {
-                if (nav.next) this.createArrow(nav.next, "NEXT", "0 0.5 -4", 0);
-                if (nav.prev) this.createArrow(nav.prev, "BACK", "0 -0.5 -4", 180);
+                if (nav.next) this.createArrow(nav.next, "SIGUIENTE", "0 0.5 -4", 0);
+                if (nav.prev) this.createArrow(nav.prev, "VOLVER", "0 -0.5 -4", 180);
             },
 
             createArrow(target, label, pos, rot) {
