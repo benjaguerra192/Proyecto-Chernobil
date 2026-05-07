@@ -103,8 +103,13 @@
         .scene-item-name { font-size: 0.9rem; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.05em; }
         .scene-item-meta { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.2em; color: rgba(255,255,255,0.4); }
 
-        .scene-hud { position: absolute; bottom: 60px; right: 60px; pointer-events: none; text-align: right; }
-        .hud-name { font-size: 2.5rem; font-weight: 100; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1; }
+        .scene-hud { 
+            position: absolute; bottom: 40px; right: 40px; 
+            pointer-events: none; text-align: right; z-index: 400;
+            transition: opacity 0.3s;
+        }
+        #drawer.open ~ .scene-hud { opacity: 0; visibility: hidden; }
+        .hud-name { font-size: 1.8rem; font-weight: 100; text-transform: uppercase; letter-spacing: 0.1em; line-height: 1; }
 
         /* Transition Overlays */
         #scene-loader {
