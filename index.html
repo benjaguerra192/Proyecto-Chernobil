@@ -239,17 +239,30 @@
                 const btn = document.getElementById('btn-start');
                 btn.textContent = "INICIAR EXPERIENCIA";
                 btn.disabled = false;
+                btn.onclick = () => this.start();
             },
 
-            start() {
-                document.getElementById('launcher').classList.add('hidden');
-                document.getElementById('ui-system').classList.add('visible');
+            async start() {
+                const btn = document.getElementById('btn-start');
+                btn.disabled = true;
+                btn.innerText = "INICIANDO...";
                 
-                // Load assets for initial scene
-                this.Scene.load("menu_principal.png");
-                
-                // Start Audio
-                document.getElementById('snd-ambient').play();
+                try {
+                    // Start discovery in background, don't wait for probes
+                    App.Discovery.init();
+                    
+                    document.getElementById('launcher').classList.add('hidden');
+                    document.getElementById('ui-system').classList.add('visible');
+                    
+                    // Load initial scene immediately
+                    this.Scene.load("menu_principal.png");
+                    
+                    // Start Audio
+                    document.getElementById('snd-ambient').play();
+                } catch (e) {
+                    console.error("Critical Start Error:", e);
+                    alert("Error al iniciar la experiencia. Por favor recarga la página.");
+                }
             },
 
             applyCinematicDrift() {
@@ -272,37 +285,41 @@
             extensions: [".png", ".jpg", ".jpeg", ".webp"],
 
             async init() {
-                console.log("[Discovery] Starting Super Scan...");
+                console.log("[Discovery] Background Scan Started...");
                 
-                // 1. Try to fetch the directory listing (Works on many local servers)
+                // Load Master Registry immediately
+                for (let f of this.masterRegistry) {
+                    this.probe(f);
+                }
+
+                // Try directory listing with timeout
                 try {
-                    const response = await fetch('Imagenes/');
-                    const text = await response.text();
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(text, 'text/html');
-                    const links = Array.from(doc.querySelectorAll('a'));
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 2000);
+                    const response = await fetch('Imagenes/', { signal: controller.signal });
+                    clearTimeout(timeoutId);
                     
-                    console.log("[Discovery] Directory listing found. Parsing links...");
-                    for (let link of links) {
-                        const href = link.getAttribute('href');
-                        if (href && (href.endsWith('.png') || href.endsWith('.jpg') || href.endsWith('.jpeg') || href.endsWith('.webp'))) {
-                            const filename = href.split('/').pop();
-                            if (filename) await this.probe(filename);
+                    if (response.ok) {
+                        const text = await response.text();
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(text, 'text/html');
+                        const links = Array.from(doc.querySelectorAll('a'));
+                        for (let link of links) {
+                            const href = link.getAttribute('href');
+                            if (href && (href.endsWith('.png') || href.endsWith('.jpg'))) {
+                                const filename = href.split('/').pop();
+                                this.probe(filename);
+                            }
                         }
                     }
                 } catch (e) {
-                    console.log("[Discovery] Directory listing not available (Normal for GitHub). Using Brute Force...");
+                    console.log("[Discovery] Fast scan skipped.");
                 }
 
-                // 2. Load the Master Registry (Hardcoded files)
-                for (let f of this.masterRegistry) {
-                    await this.probe(f);
-                }
-
-                // 3. Proactive wide-range probe (Indices 1-20)
+                // Background brute-force probes
                 const totalProbes = [];
                 this.prefixes.forEach(p => {
-                    for(let i=1; i<=20; i++) {
+                    for(let i=1; i<=15; i++) {
                         this.extensions.forEach(ext => {
                             totalProbes.push(`${p}${i}${ext}`);
                             totalProbes.push(`${i}${ext}`);
@@ -311,15 +328,13 @@
                 });
 
                 const uniqueProbes = [...new Set(totalProbes)].filter(p => !this.masterRegistry.includes(p));
-
-                // Execute probes in batches
-                const batchSize = 10;
-                for (let i = 0; i < uniqueProbes.length; i += batchSize) {
-                    const batch = uniqueProbes.slice(i, i + batchSize);
-                    await Promise.all(batch.map(filename => this.probe(filename)));
+                
+                // Probes in slow background batches
+                for (let i = 0; i < uniqueProbes.length; i += 5) {
+                    const batch = uniqueProbes.slice(i, i + 5);
+                    batch.forEach(f => this.probe(f));
+                    await new Promise(r => setTimeout(r, 500)); // Delay to keep main thread smooth
                 }
-
-                console.log("[Discovery] Final Scene Count:", Object.keys(App.state.scenes).length);
             },
 
             async probe(filename) {
@@ -540,20 +555,22 @@
 
             createBtn(text, x, cb) {
                 const el = document.createElement('a-entity');
-                el.setAttribute('position', `${x} 0 0.05`);
+                el.setAttribute('position', `${x} 0 0.1`);
                 el.setAttribute('class', 'clickable');
                 
                 const txt = document.createElement('a-text');
                 txt.setAttribute('value', text);
                 txt.setAttribute('align', 'center');
-                txt.setAttribute('width', '2.2');
+                txt.setAttribute('width', '2');
                 txt.setAttribute('color', '#fff');
-                txt.setAttribute('position', '0 0 0.01');
+                txt.setAttribute('shader', 'msdf');
+                txt.setAttribute('position', '0 0 0.05');
                 
                 const hit = document.createElement('a-plane');
                 hit.setAttribute('width', '0.7');
-                hit.setAttribute('height', '0.35');
+                hit.setAttribute('height', '0.3');
                 hit.setAttribute('material', 'color: #ff6600; opacity: 0; shader: flat');
+                hit.setAttribute('position', '0 0 0.01');
 
                 el.appendChild(txt);
                 el.appendChild(hit);
