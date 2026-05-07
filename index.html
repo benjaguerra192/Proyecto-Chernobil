@@ -251,44 +251,63 @@
             }
         };
 
-        // ── DISCOVERY: AGGRESSIVE AUTOMATIC SCANNER ───────────────────
+        // ── DISCOVERY: SUPER AUTOMATIC SCANNER ────────────────────────
         App.Discovery = {
-            // masterRegistry: Add unique filenames here if the scanner misses them
-            masterRegistry: ["menu_principal.png", "control_room_1.png", "control_room_2.png", "control_room_3.png", "control_room_3_quemado.png", "control_room_4.png"],
+            // Updated automatically with current folder contents
+            masterRegistry: ["control_room_1.png", "control_room_2.png", "control_room_3.png", "control_room_3_quemado.png", "control_room_4.png", "menu_principal.png"],
             
-            prefixes: ["control_room_", "reactor_", "exterior_", "sala_", "room_", "scene_", "img_", "panorama_", "view_"],
+            prefixes: ["control_room_", "reactor_", "exterior_", "sala_", "room_", "scene_", "img_", "panorama_", "view_", "photo_"],
             extensions: [".png", ".jpg", ".jpeg", ".webp"],
 
             async init() {
-                console.log("[Discovery] Starting Aggressive Scan...");
+                console.log("[Discovery] Starting Super Scan...");
                 
-                // 1. First, load the Master Registry
+                // 1. Try to fetch the directory listing (Works on many local servers)
+                try {
+                    const response = await fetch('Imagenes/');
+                    const text = await response.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(text, 'text/html');
+                    const links = Array.from(doc.querySelectorAll('a'));
+                    
+                    console.log("[Discovery] Directory listing found. Parsing links...");
+                    for (let link of links) {
+                        const href = link.getAttribute('href');
+                        if (href && (href.endsWith('.png') || href.endsWith('.jpg') || href.endsWith('.jpeg') || href.endsWith('.webp'))) {
+                            const filename = href.split('/').pop();
+                            if (filename) await this.probe(filename);
+                        }
+                    }
+                } catch (e) {
+                    console.log("[Discovery] Directory listing not available (Normal for GitHub). Using Brute Force...");
+                }
+
+                // 2. Load the Master Registry (Hardcoded files)
                 for (let f of this.masterRegistry) {
                     await this.probe(f);
                 }
 
-                // 2. Proactive wide-range probe (indices 1-15 for each prefix and extension)
+                // 3. Proactive wide-range probe (Indices 1-20)
                 const totalProbes = [];
                 this.prefixes.forEach(p => {
-                    for(let i=1; i<=15; i++) {
+                    for(let i=1; i<=20; i++) {
                         this.extensions.forEach(ext => {
                             totalProbes.push(`${p}${i}${ext}`);
-                            totalProbes.push(`${i}${ext}`); // Also check just "1.png", "2.png", etc.
+                            totalProbes.push(`${i}${ext}`);
                         });
                     }
                 });
 
-                // Remove duplicates
                 const uniqueProbes = [...new Set(totalProbes)].filter(p => !this.masterRegistry.includes(p));
 
-                // Execute probes in small batches to avoid network congestion
-                const batchSize = 8;
+                // Execute probes in batches
+                const batchSize = 10;
                 for (let i = 0; i < uniqueProbes.length; i += batchSize) {
                     const batch = uniqueProbes.slice(i, i + batchSize);
                     await Promise.all(batch.map(filename => this.probe(filename)));
                 }
 
-                console.log("[Discovery] Scan Complete. Found:", Object.keys(App.state.scenes).length, "scenes.");
+                console.log("[Discovery] Final Scene Count:", Object.keys(App.state.scenes).length);
             },
 
             async probe(filename) {
@@ -297,25 +316,21 @@
                 return new Promise(resolve => {
                     const img = new Image();
                     img.onload = () => {
-                        console.log(`[Discovery] ✅ SUCCESS: Found ${filename}`);
+                        console.log(`[Discovery] ✅ DETECTED: ${filename}`);
                         App.state.scenes[filename] = {
                             id: filename,
                             title: this.getCleanName(filename),
                             path: `Imagenes/${filename}`
                         };
-                        // LIVE UPDATE: Don't wait for the scan to finish to show the item
                         this.renderGallery();
                         resolve(true);
                     };
-                    img.onerror = () => {
-                        resolve(false);
-                    };
+                    img.onerror = () => resolve(false);
                     img.src = `Imagenes/${filename}`;
                 });
             },
 
             getCleanName(file) {
-                // Specific Overrides
                 const mapping = {
                     "menu_principal.png": "Exterior Reactor 4",
                     "control_room_1.png": "Sala de Control A",
@@ -326,7 +341,6 @@
                 };
                 if (mapping[file]) return mapping[file];
 
-                // Generic Formatter
                 let n = file.split('.')[0].replace(/_/g, " ");
                 return n.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
             },
@@ -334,10 +348,7 @@
             renderGallery() {
                 const list = document.getElementById('scene-list');
                 if (!list) return;
-                
-                // Sort scenes by name to keep order consistent
                 const sortedScenes = Object.values(App.state.scenes).sort((a, b) => a.title.localeCompare(b.title));
-                
                 list.innerHTML = "";
                 sortedScenes.forEach(scene => {
                     const el = document.createElement('div');
