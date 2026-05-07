@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>CHERNOBYL VR | Experiencia Inmersiva</title>
     
+    <!-- SEO & Social Media -->
+    <meta name="description" content="Explora el reactor 4 de Chernobyl en una experiencia VR inmersiva y educativa.">
+    <meta name="keywords" content="Chernobyl, VR, Realidad Virtual, A-Frame, Historia, Reactor 4">
+    <meta property="og:title" content="CHERNOBYL VR | Experiencia Inmersiva">
+    <meta property="og:description" content="Recorrido histórico interactivo por la sala de control del reactor 4.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#ff6600">
+
     <!-- Fonts & A-Frame -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -518,9 +526,10 @@
                 UI.elements.loader.classList.add('active');
                 
                 try {
-                    const texture = await this.fetchTexture('Imagenes/' + file);
-                    document.getElementById('sky').getObject3D('mesh').material.map = texture;
-                    document.getElementById('sky').getObject3D('mesh').material.needsUpdate = true;
+                    const skyEl = document.getElementById('sky');
+                    
+                    // Standard A-Frame way to set sky texture (more robust)
+                    skyEl.setAttribute('src', 'Imagenes/' + file);
                     
                     this.currentFile = file;
                     UI.elements.sceneName.textContent = data.name.toUpperCase();
@@ -536,22 +545,15 @@
                     App.VFX.apply(data.vfx);
                     
                     UI.setInteractionLock(CONFIG.TRANSITION_LOCK);
-                } catch (e) { console.error("Load Error:", e); }
+                } catch (e) { 
+                    console.error("Load Error:", e); 
+                    UI.elements.loader.classList.remove('active');
+                }
 
-                UI.elements.loader.classList.remove('active');
-                App.state.loading = false;
-            },
-
-            fetchTexture(url) {
-                return new Promise((resolve, reject) => {
-                    new THREE.TextureLoader().load(url, tex => {
-                        tex.colorSpace = THREE.SRGBColorSpace;
-                        tex.generateMipmaps = false;
-                        tex.minFilter = THREE.LinearFilter;
-                        tex.anisotropy = 16;
-                        resolve(tex);
-                    }, undefined, reject);
-                });
+                setTimeout(() => {
+                    UI.elements.loader.classList.remove('active');
+                    App.state.loading = false;
+                }, 500);
             },
 
             next() {
@@ -576,6 +578,8 @@
             spawn(file) {
                 this.clear();
                 const data = SCENES[file];
+                if (!data) return;
+                
                 if (data.hotspots) data.hotspots.forEach(h => this.createMarker(h));
                 if (data.worker) this.createWorker(data.worker);
                 if (data.nav) this.createNavLinks(data.nav);
@@ -586,7 +590,12 @@
                 el.setAttribute('class', 'clickable');
                 el.setAttribute('position', h.pos);
                 el.setAttribute('geometry', 'primitive: circle; radius: 0.1');
-                el.setAttribute('material', `color: ${h.radioactive ? '#ff3300' : '#ff6600'}; shader: flat; opacity: 0.8; side: double`);
+                el.setAttribute('material', {
+                    color: h.radioactive ? '#ff3300' : '#ff6600',
+                    shader: 'flat',
+                    opacity: 0.8,
+                    side: 'double'
+                });
                 el.setAttribute('look-at', '[camera]');
                 el.setAttribute('animation__pulse', 'property: scale; from: 1 1 1; to: 1.2 1.2 1.2; dur: 1000; dir: alternate; loop: true');
 
@@ -595,7 +604,7 @@
                     if (h.radioactive) document.getElementById('main-camera').setAttribute('camera-shake', 'intensity: 0.1');
                 });
                 el.addEventListener('mouseleave', () => {
-                    el.setAttribute('material', `color: ${h.radioactive ? '#ff3300' : '#ff6600'}`);
+                    el.setAttribute('material', {color: h.radioactive ? '#ff3300' : '#ff6600'});
                     document.getElementById('main-camera').setAttribute('camera-shake', 'intensity: 0');
                 });
                 el.addEventListener('click', () => { Audio.playSFX('snd-beep'); this.showPanel(h); });
@@ -607,7 +616,12 @@
                 el.setAttribute('class', 'clickable');
                 el.setAttribute('position', w.pos);
                 el.setAttribute('geometry', 'primitive: circle; radius: 0.15');
-                el.setAttribute('material', 'color: #0088ff; shader: flat; opacity: 0.8; side: double');
+                el.setAttribute('material', {
+                    color: '#0088ff',
+                    shader: 'flat',
+                    opacity: 0.8,
+                    side: 'double'
+                });
                 el.setAttribute('look-at', '[camera]');
                 
                 const t = document.createElement('a-text');
@@ -627,8 +641,8 @@
             },
 
             createNavLinks(nav) {
-                if (nav.next) this.createArrow(nav.next, "SIGUIENTE", "0 0.5 -4", 0);
-                if (nav.prev) this.createArrow(nav.prev, "VOLVER", "0 -0.5 -4", 180);
+                if (nav.next) this.createArrow(nav.next, "NEXT", "0 0.5 -4", 0);
+                if (nav.prev) this.createArrow(nav.prev, "BACK", "0 -0.5 -4", 180);
             },
 
             createArrow(target, label, pos, rot) {
@@ -636,7 +650,7 @@
                 el.setAttribute('class', 'clickable');
                 el.setAttribute('position', pos);
                 el.setAttribute('geometry', 'primitive: triangle; vertexA: 0 0.15 0; vertexB: -0.15 -0.15 0; vertexC: 0.15 -0.15 0');
-                el.setAttribute('material', 'color: #fff; opacity: 0.4; shader: flat; side: double');
+                el.setAttribute('material', {color: '#fff', opacity: 0.4, shader: 'flat', side: 'double'});
                 el.setAttribute('rotation', `0 0 ${rot}`);
                 el.setAttribute('look-at', '[camera]');
                 
@@ -679,8 +693,8 @@
             
             apply(config) {
                 this.chroma.style.opacity = config?.chroma ? '1' : '0';
-                config?.warning ? this.warning.classList.add('active') : this.warning.classList.remove('active');
-                config?.glitch ? this.ui.classList.add('glitch') : this.ui.classList.remove('glitch');
+                if (this.warning) config?.warning ? this.warning.classList.add('active') : this.warning.classList.remove('active');
+                if (this.ui) config?.glitch ? this.ui.classList.add('glitch') : this.ui.classList.remove('glitch');
                 if (config?.pulse) this.startPulse(); else this.stopPulse();
             },
 
@@ -708,8 +722,21 @@
                     div.onclick = () => { Scene.load(key); UI.toggleDrawer(); };
                     UI.elements.sceneList.appendChild(div);
                 });
-                document.getElementById('btn-start').textContent = "INICIAR EXPERIENCIA";
-                document.getElementById('btn-start').disabled = false;
+
+                // Wait for A-Frame scene to be fully loaded before enabling the start button
+                const sceneEl = document.querySelector('a-scene');
+                if (sceneEl.hasLoaded) {
+                    this.ready();
+                } else {
+                    sceneEl.addEventListener('loaded', () => this.ready());
+                }
+            },
+            ready() {
+                const btn = document.getElementById('btn-start');
+                if (btn) {
+                    btn.textContent = "INICIAR EXPERIENCIA";
+                    btn.disabled = false;
+                }
             },
             start() {
                 document.getElementById('launcher').classList.add('hidden');
