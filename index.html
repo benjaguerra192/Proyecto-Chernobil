@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>CHERNOBYL VR | Experiencia Inmersiva</title>
+    
+    <!-- Fonts & A-Frame -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;600;900&display=swap" rel="stylesheet">
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #ff6600;
+            --primary-glow: rgba(255, 102, 0, 0.4);
+            --secondary: #00eeff;
+            --danger: #ff0000;
+            --bg: #030303;
+            --glass: rgba(10, 10, 10, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --font: 'Inter', sans-serif;
+            --ease: cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); font-family: var(--font); color: white; overflow: hidden; height: 100dvh; }
+
+        /* ── PREMIUM LAUNCHER ────────────────────────────── */
+        #launcher {
+            position: fixed; inset: 0; z-index: 9999;
+            background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 2s var(--ease), visibility 2s;
+        }
+        #launcher.hidden { opacity: 0; visibility: hidden; }
+
+        .launcher-bg-vfx {
+            position: absolute; inset: 0;
+            background-image: 
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        .launcher-content { 
+            position: relative; text-align: center; max-width: 800px; padding: 40px; 
+            animation: contentEnter 1.5s var(--ease);
+        }
+
+        @keyframes contentEnter {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .launcher-eyebrow { 
+            font-size: 0.6rem; letter-spacing: 0.8em; color: var(--primary); 
+            text-transform: uppercase; margin-bottom: 24px; font-weight: 800;
+            opacity: 0.8;
+        }
+        
+        #launcher h1 {
+            font-size: clamp(4rem, 15vw, 8rem); font-weight: 900; letter-spacing: -0.04em;
+            text-transform: uppercase; line-height: 0.85; margin-bottom: 60px;
+            color: #fff;
+            filter: drop-shadow(0 0 30px var(--primary-glow));
+        }
+
+        .launcher-btn-wrap { position: relative; }
+        .launcher-btn {
+            background: transparent; border: 1px solid var(--primary); color: var(--primary);
+            padding: 24px 80px; font-size: 0.75rem; letter-spacing: 0.5em; font-weight: 700;
+            text-transform: uppercase; cursor: pointer; transition: all 0.5s var(--ease);
+            position: relative; overflow: hidden;
+            background: rgba(255, 102, 0, 0.05);
+        }
+        .launcher-btn:hover { 
+            background: var(--primary); color: black; 
+            box-shadow: 0 0 50px var(--primary-glow);
+            transform: scale(1.05);
+        }
+
+        /* ── INTERACTION COOLDOWN ──────────────────────────── */
+        #cooldown-overlay {
+            position: fixed; inset: 0; z-index: 8500;
+            background: rgba(0,0,0,0.3); pointer-events: none;
+            display: flex; align-items: flex-end; justify-content: center;
+            padding-bottom: 100px; opacity: 0; transition: opacity 0.5s;
+        }
+        #cooldown-overlay.active { opacity: 1; }
+        
+        .cooldown-wrap { text-align: center; width: 300px; }
+        .cooldown-label { font-size: 0.55rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--primary); margin-bottom: 15px; font-weight: 800; }
+        .cooldown-bar { width: 100%; height: 1px; background: rgba(255,255,255,0.1); overflow: hidden; }
+        .cooldown-fill { height: 100%; width: 0%; background: var(--primary); transition: width 4s linear; }
+
+        /* ── UI SYSTEM ─────────────────────────────────────── */
+        #ui-system { position: fixed; inset: 0; pointer-events: none; z-index: 500; opacity: 0; transition: opacity 1.5s var(--ease); }
+        #ui-system.visible { opacity: 1; }
+
+        /* Premium Topbar */
+        .topbar {
+            position: absolute; top: 0; left: 0; right: 0; padding: 40px 60px;
+            display: flex; align-items: center; justify-content: space-between;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            pointer-events: auto;
+        }
+        .app-title { font-size: 0.6rem; letter-spacing: 0.6em; text-transform: uppercase; color: rgba(255,255,255,0.3); font-weight: 800; }
+        .btn-ui {
+            background: var(--glass); border: 1px solid var(--glass-border); color: white;
+            padding: 14px 28px; font-size: 0.55rem; letter-spacing: 0.3em; font-weight: 700;
+            text-transform: uppercase; cursor: pointer; backdrop-filter: blur(20px);
+            transition: all 0.3s; border-radius: 0;
+        }
+        .btn-ui:hover { background: white; color: black; border-color: white; transform: translateY(-2px); }
+
+        /* Premium Drawer */
+        #drawer {
+            position: absolute; top: 0; left: 0; width: 400px; height: 100%;
+            background: var(--glass); backdrop-filter: blur(50px); border-right: 1px solid var(--glass-border);
+            transform: translateX(-100%); transition: transform 0.8s var(--ease);
+            display: flex; flex-direction: column; pointer-events: auto;
+        }
+        #drawer.open { transform: translateX(0); }
+        .drawer-head { padding: 60px 40px; border-bottom: 1px solid var(--glass-border); }
+        .drawer-title { font-size: 0.55rem; letter-spacing: 0.5em; text-transform: uppercase; color: var(--primary); margin-bottom: 12px; font-weight: 800; }
+        .drawer-subtitle { font-size: 1.5rem; font-weight: 200; letter-spacing: -0.02em; }
+        
+        #scene-list { flex: 1; overflow-y: auto; padding: 30px; }
+        .scene-item {
+            padding: 24px; border-radius: 2px; cursor: pointer; border: 1px solid transparent;
+            transition: all 0.4s var(--ease); margin-bottom: 12px; background: rgba(255,255,255,0.02);
+        }
+        .scene-item:hover { background: rgba(255,102,0,0.08); border-color: rgba(255,102,0,0.2); }
+        .scene-item.active { background: rgba(255,102,0,0.15); border-color: var(--primary); }
+        .scene-item-name { font-size: 0.9rem; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.05em; }
+        .scene-item-meta { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.2em; color: rgba(255,255,255,0.4); }
+
+        /* HUD Labels */
+        .scene-hud { position: absolute; bottom: 60px; left: 60px; animation: hudEnter 2s var(--ease); }
+        @keyframes hudEnter { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        .hud-name { font-size: 2.5rem; font-weight: 100; letter-spacing: 0.05em; text-transform: uppercase; line-height: 1; }
+        .hud-location { font-size: 0.55rem; color: var(--primary); letter-spacing: 0.6em; margin-bottom: 12px; font-weight: 900; }
+
+        /* VFX Layer */
+        #vfx-layer { position: fixed; inset: 0; z-index: 100; pointer-events: none; }
+        .vfx-vignette { position: absolute; inset: 0; background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.9) 150%); }
+        .vfx-noise { position: absolute; inset: 0; opacity: 0.05; background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="n"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23n)"/%3E%3C/svg%3E'); }
+        #vfx-blur { position: absolute; inset: 0; backdrop-filter: blur(0px); transition: backdrop-filter 1s; }
+        #vfx-chroma { position: absolute; inset: 0; mix-blend-mode: screen; opacity: 0; transition: opacity 1s; background: radial-gradient(circle at 48% 50%, rgba(255,0,0,0.1), transparent 70%), radial-gradient(circle at 52% 50%, rgba(0,0,255,0.1), transparent 70%); }
+        
+        #vfx-warning { position: absolute; inset: 0; background: rgba(255,0,0,0.15); opacity: 0; pointer-events: none; transition: opacity 0.5s; }
+        #vfx-warning.active { animation: warning-pulse 1.5s infinite; }
+        @keyframes warning-pulse { 0% { opacity: 0; } 50% { opacity: 0.4; } 100% { opacity: 0; } }
+
+        /* Loader Overlay */
+        #scene-loader {
+            position: fixed; inset: 0; z-index: 8000; background: black;
+            display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.6s;
+        }
+        #scene-loader.active { display: flex; opacity: 1; }
+        .loader-spinner { width: 50px; height: 50px; border: 1px solid rgba(255,102,0,0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <!-- 1. Launcher Screen -->
+    <div id="launcher">
+        <div class="launcher-bg-vfx"></div>
+        <div class="launcher-content">
+            <div class="launcher-eyebrow">Classified Visual Records</div>
+            <h1>Chernobyl</h1>
+            <div class="launcher-btn-wrap">
+                <button id="btn-start" class="launcher-btn" disabled>Initializing Systems...</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. VFX & Post-processing -->
+    <div id="vfx-layer">
+        <div class="vfx-vignette"></div>
+        <div class="vfx-noise"></div>
+        <div id="vfx-blur"></div>
+        <div id="vfx-chroma"></div>
+        <div id="vfx-warning"></div>
+    </div>
+
+    <!-- 3. Scene Transition Loader -->
+    <div id="scene-loader">
+        <div class="loader-spinner"></div>
+    </div>
+
+    <!-- 4. Interaction Cooldown Overlay -->
+    <div id="cooldown-overlay">
+        <div class="cooldown-wrap">
+            <div class="cooldown-label" id="cooldown-status">Initializing...</div>
+            <div class="cooldown-bar"><div id="cooldown-fill" class="cooldown-fill"></div></div>
+        </div>
+    </div>
+
+    <!-- 5. UI System -->
+    <div id="ui-system">
+        <div class="topbar">
+            <div style="display:flex; gap: 20px; align-items: center;">
+                <button class="btn-ui" id="ui-btn-menu">Galería</button>
+                <span class="app-title">Declassified VR Archive</span>
+            </div>
+            <div style="display:flex; gap: 15px;">
+                <button class="btn-ui" id="ui-btn-fs">Full Screen</button>
+                <button class="btn-ui" id="ui-btn-vr">VR Mode</button>
+            </div>
+        </div>
+
+        <div id="drawer">
+            <div class="drawer-head">
+                <div class="drawer-title">Catálogo Histórico</div>
+                <div class="drawer-subtitle">Zonas de Exclusión</div>
+            </div>
+            <div id="scene-list"></div>
+        </div>
+
+        <div class="scene-hud">
+            <div class="hud-location">SISTEMA ACTIVO</div>
+            <div class="hud-name" id="ui-scene-name">SALA DE CONTROL</div>
+        </div>
+    </div>
+
+    <!-- 6. A-Frame Scene -->
+    <a-scene
+        renderer="antialias: true; colorManagement: true; logarithmicDepthBuffer: true; highRefreshRate: true;"
+        vr-mode-ui="enabled: false"
+        loading-screen="enabled: false"
+        device-orientation-permission-ui="enabled: false">
+
+        <a-assets>
+            <!-- Ambient Loops -->
+            <audio id="snd-menu" src="Audios/menu_principal.mp3" preload="auto" loop></audio>
+            <audio id="snd-control" src="Audios/control-rooms.mp3" preload="auto" loop></audio>
+            <audio id="snd-panic" src="Audios/panic.mp3" preload="auto" loop></audio>
+            <audio id="snd-radiation" src="Audios/radiation.mp3" preload="auto" loop></audio>
+            <audio id="snd-caos" src="Audios/caos.mp3" preload="auto" loop></audio>
+            <!-- Voices -->
+            <audio id="snd-worker-1" src="Audios/trabajador_1.mp3" preload="auto"></audio>
+            <audio id="snd-worker-2" src="Audios/trabajador_2.mp3" preload="auto"></audio>
+            <audio id="snd-worker-caos" src="Audios/trabajador_caos.mp3" preload="auto"></audio>
+            <!-- Atmospheric Sounds -->
+            <audio id="snd-geiger" src="https://assets.mixkit.co/sfx/preview/mixkit-geiger-counter-clicking-loop-2559.mp3" preload="auto" loop></audio>
+            <audio id="snd-breath" src="https://assets.mixkit.co/sfx/preview/mixkit-heavy-man-breathing-2178.mp3" preload="auto" loop></audio>
+            <!-- UI SFX -->
+            <audio id="snd-beep" src="https://cdn.aframe.io/360-video-example/audio/click.mp3" preload="auto"></audio>
+        </a-assets>
+
+        <script>
+            // ── CUSTOM COMPONENTS ──────────────────────────────────
+            AFRAME.registerComponent('dust-particles', {
+                init: function() {
+                    for(let i=0; i<80; i++) {
+                        let p = document.createElement('a-entity');
+                        let x = (Math.random()-0.5)*15;
+                        let y = (Math.random()*5);
+                        let z = (Math.random()-0.5)*15;
+                        p.setAttribute('geometry', 'primitive: sphere; radius: 0.01');
+                        p.setAttribute('material', 'color: #fff; opacity: 0.3; shader: flat');
+                        p.setAttribute('position', `${x} ${y} ${z}`);
+                        p.setAttribute('animation', {
+                            property: 'position',
+                            to: `${x + (Math.random()-0.5)*2} ${y + (Math.random()-0.5)*2} ${z + (Math.random()-0.5)*2}`,
+                            dur: 10000 + Math.random()*10000,
+                            dir: 'alternate',
+                            loop: true,
+                            easing: 'easeInOutSine'
+                        });
+                        this.el.appendChild(p);
+                    }
+                }
+            });
+
+            AFRAME.registerComponent('camera-shake', {
+                schema: { intensity: {type: 'number', default: 0.05} },
+                tick: function(t, dt) {
+                    if (this.intensity > 0) {
+                        this.el.object3D.position.x += (Math.random()-0.5) * this.intensity;
+                        this.el.object3D.position.y += (Math.random()-0.5) * this.intensity;
+                    }
+                }
+            });
+        </script>
+
+        <!-- Environment -->
+        <a-sky id="sky" radius="500" segments-width="256" segments-height="256" rotation="0 -90 0"></a-sky>
+        
+        <!-- Dust Layer (Visible in interior scenes) -->
+        <a-entity id="dust-system" dust-particles visible="false"></a-entity>
+
+        <!-- Interactive Containers -->
+        <a-entity id="hotspot-root"></a-entity>
+        <a-entity id="panel-root"></a-entity>
+        <a-entity id="nav-world-root"></a-entity>
+
+        <!-- Camera Rig -->
+        <a-entity id="camera-rig" position="0 1.6 0">
+            <a-entity id="main-camera" camera look-controls="magicWindowTrackingEnabled: true; touchEnabled: true;">
+                <!-- Reticle with Fuse Feedback -->
+                <a-entity id="cursor"
+                    cursor="fuse: true; fuseTimeout: 1500"
+                    position="0 0 -1"
+                    geometry="primitive: ring; radiusInner: 0.015; radiusOuter: 0.025"
+                    material="color: white; shader: flat; opacity: 0.6"
+                    raycaster="objects: .clickable"
+                    animation__fusing="property: scale; from: 1 1 1; to: 0.1 0.1 0.1; dur: 1500; startEvents: fusing"
+                    animation__mouseleave="property: scale; to: 1 1 1; dur: 200; startEvents: mouseleave"
+                    animation__click="property: scale; from: 0.5 0.5 0.5; to: 1 1 1; dur: 150; startEvents: click">
+                    
+                    <a-entity
+                        geometry="primitive: ring; radiusInner: 0.028; radiusOuter: 0.03"
+                        material="color: #ff6600; shader: flat; opacity: 0"
+                        animation__show="property: material.opacity; from: 0; to: 0.8; dur: 1500; startEvents: fusing"
+                        animation__hide="property: material.opacity; to: 0; dur: 200; startEvents: mouseleave">
+                    </a-entity>
+                </a-entity>
+            </a-entity>
+        </a-entity>
+
+        <!-- 3D VR Navigation Menu (HUD Lower) -->
+        <a-entity id="vr-nav" position="0 0.8 -3" rotation="-15 0 0" visible="false">
+            <a-plane width="3" height="0.4" material="color: #000; opacity: 0.8; shader: flat" position="0 0 0">
+                <a-text value="< ANTERIOR" align="center" width="2" position="-1 0 0.01" class="clickable" id="vr-btn-prev"></a-text>
+                <a-text value="GALERÍA" align="center" width="2" position="0 0 0.01" class="clickable" id="vr-btn-menu"></a-text>
+                <a-text value="SIGUIENTE >" align="center" width="2" position="1 0 0.01" class="clickable" id="vr-btn-next"></a-text>
+            </a-plane>
+        </a-entity>
+
+    </a-scene>
+
+    <script>
+        // ── APPLICATION CONFIG ──────────────────────────────────────
+        const CONFIG = {
+            INTERACTION_LOCK: 4000,
+            TRANSITION_LOCK: 2000,
+            AMBIENT_VOL: 0.25,
+            DUCKED_VOL: 0.08,
+            FADE_DUR: 1200
+        };
+
+        // ── SCENES CONFIG ───────────────────────────────────────────
+        const SCENES = {
+            "menu_principal.png": {
+                name: "Chernobyl",
+                loc: "EXTERIOR REACTOR 4",
+                audio: "snd-menu",
+                nav: { next: "control_room_1.png" },
+                hotspots: [
+                    { pos: "1 1.4 -3", title: "Sarcófago", desc: "Contenedor final del reactor. Fue diseñado para durar 100 años." },
+                    { pos: "-2 1.2 -2.5", title: "Zona Roja", desc: "La radiación aquí sigue siendo 10 veces superior al límite seguro." }
+                ]
+            },
+            "control_room_1.png": {
+                name: "Sala de Control A",
+                loc: "NÚCLEO DEL REACTOR",
+                audio: "snd-control",
+                dust: true,
+                nav: { prev: "menu_principal.png", next: "control_room_2.png" },
+                worker: { pos: "0 1.3 -2.5", audio: "snd-worker-1", label: "Operario Jefe" },
+                hotspots: [
+                    { pos: "-3 1.7 -1.5", title: "Panel de Control", desc: "Registró el pico de potencia a las 01:23:45." }
+                ]
+            },
+            "control_room_2.png": {
+                name: "Sala de Control B",
+                loc: "ESTACIÓN TÉCNICA",
+                audio: "snd-control",
+                dust: true,
+                nav: { prev: "control_room_1.png", next: "control_room_3.png" },
+                worker: { pos: "-1.2 1.3 -2.5", audio: "snd-worker-2", label: "Técnico Senior" },
+                hotspots: [
+                    { pos: "0 1.8 -3", title: "Sensores", desc: "Monitores de temperatura del núcleo fundido." }
+                ]
+            },
+            "control_room_3.png": {
+                name: "Sala de Control C",
+                loc: "PUESTO AVANZADO",
+                audio: "snd-control",
+                dust: true,
+                nav: { prev: "control_room_2.png", next: "control_room_3_quemado.png" },
+                worker: { pos: "2.5 1.4 -1.5", audio: "snd-worker-2", label: "Ingeniero" },
+                hotspots: [
+                    { pos: "2.5 2.2 -1.5", title: "Reloj", desc: "Sincronizado con el momento exacto del desastre." }
+                ]
+            },
+            "control_room_3_quemado.png": {
+                name: "Reactor 4 - Colapso",
+                loc: "ZONA CRÍTICA",
+                audio: "snd-radiation",
+                panic: true,
+                dust: true,
+                vfx: { chroma: true, noise: true, pulse: true, warning: true, glitch: true },
+                nav: { prev: "control_room_3.png" },
+                worker: { pos: "-2 1.3 -2", audio: "snd-worker-caos", label: "Sobreviviente" },
+                hotspots: [
+                    { pos: "0 1.6 -3", title: "NÚCLEO EXPUESTO", desc: "Niveles de radiación letales detectados. Evacuación inmediata.", radioactive: true }
+                ]
+            }
+        };
+
+        // ── MODULE: UI MANAGER ─────────────────────────────────────
+        const UI = {
+            init() {
+                this.elements = {
+                    launcher: document.getElementById('launcher'),
+                    btnStart: document.getElementById('btn-start'),
+                    ui: document.getElementById('ui-system'),
+                    drawer: document.getElementById('drawer'),
+                    sceneList: document.getElementById('scene-list'),
+                    sceneName: document.getElementById('ui-scene-name'),
+                    loader: document.getElementById('scene-loader'),
+                    cooldown: document.getElementById('cooldown-overlay'),
+                    cooldownFill: document.getElementById('cooldown-fill'),
+                    cooldownText: document.getElementById('cooldown-status'),
+                    vfxWarning: document.getElementById('vfx-warning')
+                };
+                this.bindEvents();
+            },
+
+            bindEvents() {
+                this.elements.btnStart.addEventListener('click', () => App.start());
+                document.getElementById('ui-btn-menu').addEventListener('click', () => this.toggleDrawer());
+                document.getElementById('ui-btn-fs').addEventListener('click', () => this.toggleFS());
+                document.getElementById('ui-btn-vr').addEventListener('click', () => document.querySelector('a-scene').enterVR());
+                document.getElementById('vr-btn-prev').addEventListener('click', () => App.Scene.prev());
+                document.getElementById('vr-btn-next').addEventListener('click', () => App.Scene.next());
+                document.getElementById('vr-btn-menu').addEventListener('click', () => this.toggleDrawer());
+            },
+
+            toggleDrawer() { this.elements.drawer.classList.toggle('open'); },
+            toggleFS() { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); },
+
+            setInteractionLock(duration) {
+                App.state.locked = true;
+                this.elements.cooldown.classList.add('active');
+                this.elements.cooldownFill.style.transition = 'none';
+                this.elements.cooldownFill.style.width = '0%';
+                requestAnimationFrame(() => {
+                    this.elements.cooldownFill.style.transition = `width ${duration}ms linear`;
+                    this.elements.cooldownFill.style.width = '100%';
+                });
+                setTimeout(() => {
+                    App.state.locked = false;
+                    this.elements.cooldown.classList.remove('active');
+                }, duration);
+            }
+        };
+
+        // ── MODULE: AUDIO MANAGER ──────────────────────────────────
+        const Audio = {
+            currentAmbient: null,
+            
+            playAmbient(id) {
+                const track = document.getElementById(id);
+                if (this.currentAmbient === track) return;
+                if (this.currentAmbient) this.fade(this.currentAmbient, 0);
+                this.currentAmbient = track;
+                track.volume = 0;
+                track.play();
+                this.fade(track, CONFIG.AMBIENT_VOL);
+            },
+
+            toggleAtmo(id, on) {
+                const snd = document.getElementById(id);
+                if (!snd) return;
+                if (on) {
+                    snd.volume = 0;
+                    snd.play();
+                    this.fade(snd, 0.15);
+                } else {
+                    this.fade(snd, 0);
+                }
+            },
+
+            duck() { if (this.currentAmbient) this.fade(this.currentAmbient, CONFIG.DUCKED_VOL, 600); },
+            restore() { if (this.currentAmbient) this.fade(this.currentAmbient, CONFIG.AMBIENT_VOL, 800); },
+
+            fade(audio, target, duration = CONFIG.FADE_DUR) {
+                const start = audio.volume;
+                const delta = target - start;
+                const steps = 20;
+                let step = 0;
+                const interval = setInterval(() => {
+                    step++;
+                    audio.volume = Math.max(0, Math.min(1, start + (delta * (step / steps))));
+                    if (step >= steps) {
+                        clearInterval(interval);
+                        if (target === 0) { audio.pause(); audio.currentTime = 0; }
+                    }
+                }, duration / steps);
+            },
+
+            playSFX(id) {
+                const sfx = document.getElementById(id);
+                if (sfx) { sfx.currentTime = 0; sfx.volume = 0.4; sfx.play(); }
+            }
+        };
+
+        // ── MODULE: SCENE MANAGER ──────────────────────────────────
+        const Scene = {
+            currentFile: null,
+
+            async load(file) {
+                if (App.state.locked || this.currentFile === file) return;
+                const data = SCENES[file];
+                if (!data) return;
+
+                App.state.loading = true;
+                UI.elements.loader.classList.add('active');
+                
+                try {
+                    const texture = await this.fetchTexture('Imagenes/' + file);
+                    document.getElementById('sky').getObject3D('mesh').material.map = texture;
+                    document.getElementById('sky').getObject3D('mesh').material.needsUpdate = true;
+                    
+                    this.currentFile = file;
+                    UI.elements.sceneName.textContent = data.name.toUpperCase();
+                    document.querySelector('.hud-location').textContent = data.loc;
+                    
+                    Audio.playAmbient(data.audio);
+                    Audio.toggleAtmo('snd-geiger', data.vfx?.glitch);
+                    Audio.toggleAtmo('snd-breath', data.panic);
+                    
+                    document.getElementById('dust-system').setAttribute('visible', !!data.dust);
+                    
+                    App.Hotspots.spawn(file);
+                    App.VFX.apply(data.vfx);
+                    
+                    UI.setInteractionLock(CONFIG.TRANSITION_LOCK);
+                } catch (e) { console.error("Load Error:", e); }
+
+                UI.elements.loader.classList.remove('active');
+                App.state.loading = false;
+            },
+
+            fetchTexture(url) {
+                return new Promise((resolve, reject) => {
+                    new THREE.TextureLoader().load(url, tex => {
+                        tex.colorSpace = THREE.SRGBColorSpace;
+                        tex.generateMipmaps = false;
+                        tex.minFilter = THREE.LinearFilter;
+                        tex.anisotropy = 16;
+                        resolve(tex);
+                    }, undefined, reject);
+                });
+            },
+
+            next() {
+                const keys = Object.keys(SCENES);
+                let idx = keys.indexOf(this.currentFile) + 1;
+                this.load(keys[idx >= keys.length ? 0 : idx]);
+            },
+
+            prev() {
+                const keys = Object.keys(SCENES);
+                let idx = keys.indexOf(this.currentFile) - 1;
+                this.load(keys[idx < 0 ? keys.length - 1 : idx]);
+            }
+        };
+
+        // ── MODULE: HOTSPOT MANAGER ────────────────────────────────
+        const Hotspots = {
+            root: document.getElementById('hotspot-root'),
+            panelRoot: document.getElementById('panel-root'),
+            navRoot: document.getElementById('nav-world-root'),
+
+            spawn(file) {
+                this.clear();
+                const data = SCENES[file];
+                if (data.hotspots) data.hotspots.forEach(h => this.createMarker(h));
+                if (data.worker) this.createWorker(data.worker);
+                if (data.nav) this.createNavLinks(data.nav);
+            },
+
+            createMarker(h) {
+                const el = document.createElement('a-entity');
+                el.setAttribute('class', 'clickable');
+                el.setAttribute('position', h.pos);
+                el.setAttribute('geometry', 'primitive: circle; radius: 0.1');
+                el.setAttribute('material', `color: ${h.radioactive ? '#ff3300' : '#ff6600'}; shader: flat; opacity: 0.8; side: double`);
+                el.setAttribute('look-at', '[camera]');
+                el.setAttribute('animation__pulse', 'property: scale; from: 1 1 1; to: 1.2 1.2 1.2; dur: 1000; dir: alternate; loop: true');
+
+                el.addEventListener('mouseenter', () => {
+                    el.setAttribute('material', 'color', '#ffffff');
+                    if (h.radioactive) document.getElementById('main-camera').setAttribute('camera-shake', 'intensity: 0.1');
+                });
+                el.addEventListener('mouseleave', () => {
+                    el.setAttribute('material', `color: ${h.radioactive ? '#ff3300' : '#ff6600'}`);
+                    document.getElementById('main-camera').setAttribute('camera-shake', 'intensity: 0');
+                });
+                el.addEventListener('click', () => { Audio.playSFX('snd-beep'); this.showPanel(h); });
+                this.root.appendChild(el);
+            },
+
+            createWorker(w) {
+                const el = document.createElement('a-entity');
+                el.setAttribute('class', 'clickable');
+                el.setAttribute('position', w.pos);
+                el.setAttribute('geometry', 'primitive: circle; radius: 0.15');
+                el.setAttribute('material', 'color: #0088ff; shader: flat; opacity: 0.8; side: double');
+                el.setAttribute('look-at', '[camera]');
+                
+                const t = document.createElement('a-text');
+                t.setAttribute('value', w.label); t.setAttribute('align', 'center'); t.setAttribute('position', '0 0.4 0'); t.setAttribute('width', '2.5');
+                el.appendChild(t);
+
+                el.addEventListener('mouseenter', () => {
+                    el.setAttribute('material', 'color', '#ffffff');
+                    const voice = document.getElementById(w.audio);
+                    if (voice) { Audio.duck(); voice.volume = 0.3; voice.play(); App.state.activeVoice = voice; }
+                });
+                el.addEventListener('mouseleave', () => {
+                    el.setAttribute('material', 'color', '#0088ff');
+                    if (App.state.activeVoice) { App.state.activeVoice.pause(); App.state.activeVoice.currentTime = 0; Audio.restore(); }
+                });
+                this.root.appendChild(el);
+            },
+
+            createNavLinks(nav) {
+                if (nav.next) this.createArrow(nav.next, "SIGUIENTE", "0 0.5 -4", 0);
+                if (nav.prev) this.createArrow(nav.prev, "VOLVER", "0 -0.5 -4", 180);
+            },
+
+            createArrow(target, label, pos, rot) {
+                const el = document.createElement('a-entity');
+                el.setAttribute('class', 'clickable');
+                el.setAttribute('position', pos);
+                el.setAttribute('geometry', 'primitive: triangle; vertexA: 0 0.15 0; vertexB: -0.15 -0.15 0; vertexC: 0.15 -0.15 0');
+                el.setAttribute('material', 'color: #fff; opacity: 0.4; shader: flat; side: double');
+                el.setAttribute('rotation', `0 0 ${rot}`);
+                el.setAttribute('look-at', '[camera]');
+                
+                const t = document.createElement('a-text');
+                t.setAttribute('value', label); t.setAttribute('align', 'center'); t.setAttribute('position', '0 -0.3 0'); t.setAttribute('width', '2');
+                el.appendChild(t);
+
+                el.addEventListener('mouseenter', () => el.setAttribute('material', 'opacity', '1'));
+                el.addEventListener('mouseleave', () => el.setAttribute('material', 'opacity', '0.4'));
+                el.addEventListener('click', () => Scene.load(target));
+                this.navRoot.appendChild(el);
+            },
+
+            showPanel(h) {
+                this.panelRoot.innerHTML = '';
+                const p = document.createElement('a-entity');
+                p.setAttribute('look-at', '[camera]');
+                p.innerHTML = `
+                    <a-plane width="2.2" height="1.4" material="color: #000; opacity: 0.95; shader: flat" position="0 0 0">
+                        <a-text value="${h.title}" align="center" width="3.5" position="0 0.45 0.01" color="#ff6600"></a-text>
+                        <a-text value="${h.desc}" align="center" width="2.8" position="0 -0.1 0.01" wrap-count="30"></a-text>
+                        <a-plane class="clickable" width="0.6" height="0.2" material="color: #222" position="0 -0.5 0.01">
+                            <a-text value="CERRAR" align="center" width="2" position="0 0 0.01"></a-text>
+                        </a-plane>
+                    </a-plane>
+                `;
+                p.querySelector('a-plane.clickable').addEventListener('click', () => this.panelRoot.innerHTML = '');
+                this.panelRoot.appendChild(p);
+            },
+
+            clear() { this.root.innerHTML = ''; this.panelRoot.innerHTML = ''; this.navRoot.innerHTML = ''; }
+        };
+
+        // ── MODULE: VFX MANAGER ─────────────────────────────────────
+        const VFX = {
+            blur: document.getElementById('vfx-blur'),
+            chroma: document.getElementById('vfx-chroma'),
+            warning: document.getElementById('vfx-warning'),
+            ui: document.getElementById('ui-system'),
+            
+            apply(config) {
+                this.chroma.style.opacity = config?.chroma ? '1' : '0';
+                config?.warning ? this.warning.classList.add('active') : this.warning.classList.remove('active');
+                config?.glitch ? this.ui.classList.add('glitch') : this.ui.classList.remove('glitch');
+                if (config?.pulse) this.startPulse(); else this.stopPulse();
+            },
+
+            startPulse() {
+                this.stopPulse();
+                let t = 0;
+                this.pulseTimer = setInterval(() => {
+                    t += 0.05;
+                    this.blur.style.backdropFilter = `blur(${Math.abs(Math.sin(t)) * 4}px)`;
+                }, 50);
+            },
+
+            stopPulse() { if (this.pulseTimer) clearInterval(this.pulseTimer); this.blur.style.backdropFilter = 'blur(0px)'; }
+        };
+
+        // ── MODULE: MAIN APP ───────────────────────────────────────
+        const App = {
+            state: { locked: true, loading: false, activeVoice: null },
+            init() {
+                UI.init();
+                Object.keys(SCENES).forEach(key => {
+                    const div = document.createElement('div');
+                    div.className = 'scene-item';
+                    div.innerHTML = `<div class="scene-item-name">${SCENES[key].name}</div><div class="scene-item-meta">${SCENES[key].loc}</div>`;
+                    div.onclick = () => { Scene.load(key); UI.toggleDrawer(); };
+                    UI.elements.sceneList.appendChild(div);
+                });
+                document.getElementById('btn-start').textContent = "INICIAR EXPERIENCIA";
+                document.getElementById('btn-start').disabled = false;
+            },
+            start() {
+                document.getElementById('launcher').classList.add('hidden');
+                document.getElementById('ui-system').classList.add('visible');
+                Scene.load("menu_principal.png");
+                UI.setInteractionLock(CONFIG.INTERACTION_LOCK);
+            }
+        };
+
+        window.addEventListener('load', () => App.init());
+    </script>
+</body>
+</html>
