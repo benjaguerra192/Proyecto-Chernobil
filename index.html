@@ -36,27 +36,22 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: var(--bg); font-family: var(--font); color: white; overflow: hidden; height: 100dvh; }
 
-        /* ── LAUNCHER ────────────────────────────────────── */
+        /* ── CINEMATIC LAUNCHER ─────────────────────────── */
         #launcher {
             position: fixed; inset: 0; z-index: 9999;
-            background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%);
+            background: radial-gradient(circle at center, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.95) 100%);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: opacity 2s var(--ease), visibility 2s;
+            transition: opacity 2.5s var(--ease), visibility 2.5s;
+            backdrop-filter: blur(10px);
         }
         #launcher.hidden { opacity: 0; visibility: hidden; }
 
-        .launcher-bg-vfx {
-            position: absolute; inset: 0;
-            background-image: 
-                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
-                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none; opacity: 0.3;
-        }
+        .launcher-content { position: relative; text-align: center; max-width: 800px; padding: 40px; animation: contentEnter 2s var(--ease); }
+        @keyframes contentEnter { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
-        .launcher-content { position: relative; text-align: center; max-width: 800px; padding: 40px; }
+        .launcher-eyebrow { font-size: 0.6rem; letter-spacing: 0.8em; color: var(--primary); text-transform: uppercase; margin-bottom: 20px; font-weight: 800; }
         #launcher h1 {
-            font-size: clamp(4rem, 15vw, 8rem); font-weight: 900; letter-spacing: -0.04em;
+            font-size: clamp(3.5rem, 15vw, 7.5rem); font-weight: 900; letter-spacing: -0.04em;
             text-transform: uppercase; line-height: 0.85; margin-bottom: 60px;
             color: #fff; filter: drop-shadow(0 0 30px var(--primary-glow));
         }
@@ -65,7 +60,7 @@
             background: transparent; border: 1px solid var(--primary); color: var(--primary);
             padding: 24px 80px; font-size: 0.75rem; letter-spacing: 0.5em; font-weight: 700;
             text-transform: uppercase; cursor: pointer; transition: all 0.5s var(--ease);
-            position: relative; overflow: hidden; background: rgba(255, 102, 0, 0.05);
+            background: rgba(255, 102, 0, 0.05);
         }
         .launcher-btn:hover:not(:disabled) { background: var(--primary); color: black; box-shadow: 0 0 50px var(--primary-glow); transform: scale(1.05); }
         .launcher-btn:disabled { opacity: 0.3; cursor: wait; }
@@ -83,7 +78,7 @@
         .btn-ui {
             background: var(--glass); border: 1px solid var(--glass-border); color: white;
             padding: 14px 28px; font-size: 0.55rem; letter-spacing: 0.3em; font-weight: 700;
-            text-transform: uppercase; cursor: pointer; backdrop-filter: blur(20px); transition: all 0.3s;
+            text-transform: uppercase; cursor: pointer; transition: all 0.3s;
         }
         .btn-ui:hover { background: white; color: black; transform: translateY(-2px); }
 
@@ -105,9 +100,9 @@
         .scene-item.active { background: rgba(255,102,0,0.15); border-color: var(--primary); }
 
         .scene-hud { position: absolute; bottom: 60px; left: 60px; pointer-events: none; }
-        .hud-name { font-size: 2.5rem; font-weight: 100; text-transform: uppercase; }
+        .hud-name { font-size: 2.5rem; font-weight: 100; text-transform: uppercase; letter-spacing: 0.05em; }
 
-        /* Loader */
+        /* Transition Overlays */
         #scene-loader {
             position: fixed; inset: 0; z-index: 8000; background: black;
             display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.6s;
@@ -116,45 +111,38 @@
         .loader-spinner { width: 50px; height: 50px; border: 1px solid rgba(255,102,0,0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Cooldown */
         #cooldown-overlay {
             position: fixed; inset: 0; z-index: 8500; pointer-events: none;
             display: flex; align-items: flex-end; justify-content: center; padding-bottom: 100px; opacity: 0; transition: opacity 0.5s;
         }
         #cooldown-overlay.active { opacity: 1; }
-        .cooldown-bar { width: 300px; height: 1px; background: rgba(255,255,255,0.1); overflow: hidden; }
-        .cooldown-fill { height: 100%; width: 0%; background: var(--primary); transition: width 3s linear; }
-
-        /* VFX Glitch */
-        .glitch-active { animation: ui-glitch 4s infinite; }
-        @keyframes ui-glitch {
-            0%, 90%, 100% { transform: translate(0); filter: none; }
-            92% { transform: translate(-2px, 1px); filter: hue-rotate(90deg); }
-            94% { transform: translate(2px, -1px); filter: hue-rotate(-90deg); }
-        }
+        .cooldown-bar { width: 300px; height: 1px; background: rgba(255,255,255,0.1); }
+        .cooldown-fill { height: 100%; width: 0%; background: var(--primary); transition: width 2.5s linear; }
     </style>
 </head>
 <body>
 
+    <!-- Cinematic Entry Launcher -->
     <div id="launcher">
-        <div class="launcher-bg-vfx"></div>
         <div class="launcher-content">
+            <div class="launcher-eyebrow">Visual Archives | 04.26.1986</div>
             <h1>Chernobyl</h1>
             <button id="btn-start" class="launcher-btn" disabled>Sincronizando Archivos...</button>
         </div>
     </div>
 
+    <!-- Desktop/Mobile UI -->
     <div id="ui-system">
         <div class="topbar">
-            <button class="btn-ui" id="ui-btn-menu">Galería</button>
-            <button class="btn-ui" id="ui-btn-vr">VR Mode</button>
+            <button class="btn-ui" id="ui-btn-menu">Explorar Galerías</button>
+            <button class="btn-ui" id="ui-btn-vr">Entrar VR</button>
         </div>
         <div id="drawer">
-            <div class="drawer-head"><h3>SALA DE REGISTROS</h3></div>
+            <div class="drawer-head"><h3 style="letter-spacing: 0.3em; color: var(--primary);">REGISTROS</h3></div>
             <div id="scene-list"></div>
         </div>
         <div class="scene-hud">
-            <div class="hud-name" id="ui-scene-name">CARGANDO...</div>
+            <div class="hud-name" id="ui-scene-name">EXTERIOR REACTOR 4</div>
         </div>
     </div>
 
@@ -166,23 +154,26 @@
         <div class="cooldown-bar"><div id="cooldown-fill" class="cooldown-fill"></div></div>
     </div>
 
+    <!-- 3D Scene -->
     <a-scene
-        renderer="antialias: true; colorManagement: true; logarithmicDepthBuffer: true;"
+        renderer="antialias: true; colorManagement: true; logarithmicDepthBuffer: true; highRefreshRate: true;"
         vr-mode-ui="enabled: false"
         loading-screen="enabled: false">
         
-        <a-assets id="asset-root">
+        <a-assets>
             <audio id="snd-click" src="https://cdn.aframe.io/360-video-example/audio/click.mp3"></audio>
-            <audio id="snd-ambient" src="Audios/control-rooms.mp3" loop></audio>
+            <audio id="snd-ambient" src="Audios/menu_principal.mp3" loop></audio>
         </a-assets>
 
-        <a-sky id="sky" radius="500" rotation="0 -90 0"></a-sky>
+        <!-- Background Panorama (Default: Exterior) -->
+        <a-sky id="sky" src="Imagenes/menu_principal.png" radius="500" rotation="0 -90 0"></a-sky>
 
-        <!-- Dynamic Content Roots -->
+        <!-- Interactive Roots -->
         <a-entity id="hotspot-container"></a-entity>
         <a-entity id="panel-container"></a-entity>
-        <a-entity id="vr-nav-container"></a-entity>
+        <a-entity id="vr-ui-container"></a-entity>
 
+        <!-- Camera Rig with Cinematic Drift -->
         <a-entity id="camera-rig" position="0 1.6 0">
             <a-entity id="main-camera" camera="fov: 80" look-controls>
                 <a-entity id="cursor"
@@ -191,7 +182,7 @@
                     geometry="primitive: ring; radiusInner: 0.015; radiusOuter: 0.025"
                     material="color: white; shader: flat; opacity: 0.6"
                     raycaster="objects: .clickable"
-                    animation__fusing="property: scale; from: 1 1 1; to: 0.2 0.2 0.2; dur: 1500; startEvents: fusing"
+                    animation__fusing="property: scale; from: 1 1 1; to: 0.15 0.15 0.15; dur: 1500; startEvents: fusing"
                     animation__reset="property: scale; to: 1 1 1; dur: 200; startEvents: mouseleave">
                     <a-entity geometry="primitive: ring; radiusInner: 0.028; radiusOuter: 0.03" material="color: #ff6600; opacity: 0"
                         animation__show="property: material.opacity; from: 0; to: 1; dur: 1500; startEvents: fusing"
@@ -203,31 +194,36 @@
 
     <script>
         /**
-         * ── CHERNOBYL VR CORE ──────────────────────────────────────────
-         * Professional modular architecture for static hosting.
+         * ── CHERNOBYL VR | MASTER REBUILD ────────────────────────────
+         * Logic focused on stability, cinematic entry, and VR recovery.
          */
-        
+
         const App = {
             state: {
-                currentScene: null,
+                currentScene: "menu_principal.png",
                 scenes: {},
                 locked: true,
                 isVR: false
             },
 
             async init() {
-                console.log("[App] Initializing...");
+                console.log("[App] System initializing...");
+                
+                // Initialize modules
                 this.Discovery.init();
                 this.UI.init();
                 
-                // Final Check
+                // Start subtle drift effect on camera rig
+                this.applyCinematicDrift();
+
+                // Wait for A-Frame to be ready
                 const sceneEl = document.querySelector('a-scene');
                 if (sceneEl.hasLoaded) this.onReady();
                 else sceneEl.addEventListener('loaded', () => this.onReady());
             },
 
             onReady() {
-                console.log("[App] Systems Online.");
+                console.log("[App] Assets Ready.");
                 const btn = document.getElementById('btn-start');
                 btn.textContent = "INICIAR EXPERIENCIA";
                 btn.disabled = false;
@@ -237,69 +233,115 @@
                 document.getElementById('launcher').classList.add('hidden');
                 document.getElementById('ui-system').classList.add('visible');
                 
-                // Load first available scene
-                const first = Object.keys(this.state.scenes)[0] || "menu_principal.png";
-                this.Scene.load(first);
+                // Load assets for initial scene
+                this.Scene.load("menu_principal.png");
+                
+                // Start Audio
+                document.getElementById('snd-ambient').play();
+            },
+
+            applyCinematicDrift() {
+                const rig = document.getElementById('camera-rig');
+                let t = 0;
+                setInterval(() => {
+                    t += 0.005;
+                    rig.object3D.rotation.y = Math.sin(t) * 0.05;
+                    rig.object3D.rotation.x = Math.cos(t * 0.8) * 0.02;
+                }, 16);
             }
         };
 
-        // ── DISCOVERY: AUTOMATIC PANORAMA SCANNER ──────────────────────
+        // ── DISCOVERY: AGGRESSIVE AUTOMATIC SCANNER ───────────────────
         App.Discovery = {
-            prefixes: ["control_room_", "reactor_", "quemado_", "exterior_"],
-            fallbacks: ["menu_principal.png", "control_room_1.png", "control_room_2.png", "control_room_3.png", "control_room_3_quemado.png", "control_room_4.png"],
+            // masterRegistry: Add unique filenames here if the scanner misses them
+            masterRegistry: ["menu_principal.png", "control_room_1.png", "control_room_2.png", "control_room_3.png", "control_room_3_quemado.png", "control_room_4.png"],
+            
+            prefixes: ["control_room_", "reactor_", "exterior_", "sala_", "room_", "scene_", "img_", "panorama_", "view_"],
+            extensions: [".png", ".jpg", ".jpeg", ".webp"],
 
             async init() {
-                console.log("[Discovery] Scanning for assets...");
+                console.log("[Discovery] Starting Aggressive Scan...");
                 
-                // 1. Check fallbacks first to ensure core content
-                for (let f of this.fallbacks) {
+                // 1. First, load the Master Registry
+                for (let f of this.masterRegistry) {
                     await this.probe(f);
                 }
 
-                // 2. Dynamic probe (indices 1-10 for each prefix)
-                const probes = [];
+                // 2. Proactive wide-range probe (indices 1-15 for each prefix and extension)
+                const totalProbes = [];
                 this.prefixes.forEach(p => {
-                    for(let i=1; i<=10; i++) probes.push(`${p}${i}.png`);
+                    for(let i=1; i<=15; i++) {
+                        this.extensions.forEach(ext => {
+                            totalProbes.push(`${p}${i}${ext}`);
+                            totalProbes.push(`${i}${ext}`); // Also check just "1.png", "2.png", etc.
+                        });
+                    }
                 });
 
-                // Run probes in parallel batches to speed up
-                for(let i=0; i<probes.length; i+=5) {
-                    await Promise.all(probes.slice(i, i+5).map(p => this.probe(p)));
+                // Remove duplicates
+                const uniqueProbes = [...new Set(totalProbes)].filter(p => !this.masterRegistry.includes(p));
+
+                // Execute probes in small batches to avoid network congestion
+                const batchSize = 8;
+                for (let i = 0; i < uniqueProbes.length; i += batchSize) {
+                    const batch = uniqueProbes.slice(i, i + batchSize);
+                    await Promise.all(batch.map(filename => this.probe(filename)));
                 }
 
-                this.buildGallery();
+                console.log("[Discovery] Scan Complete. Found:", Object.keys(App.state.scenes).length, "scenes.");
             },
 
             async probe(filename) {
-                if (App.state.scenes[filename]) return; // Skip if already found
+                if (App.state.scenes[filename]) return;
                 
                 return new Promise(resolve => {
                     const img = new Image();
                     img.onload = () => {
-                        console.log(`[Discovery] Found: ${filename}`);
+                        console.log(`[Discovery] ✅ SUCCESS: Found ${filename}`);
                         App.state.scenes[filename] = {
                             id: filename,
-                            title: this.formatName(filename),
+                            title: this.getCleanName(filename),
                             path: `Imagenes/${filename}`
                         };
+                        // LIVE UPDATE: Don't wait for the scan to finish to show the item
+                        this.renderGallery();
                         resolve(true);
                     };
-                    img.onerror = () => resolve(false);
+                    img.onerror = () => {
+                        resolve(false);
+                    };
                     img.src = `Imagenes/${filename}`;
                 });
             },
 
-            formatName(file) {
-                let name = file.replace(".png", "").replace(".jpg", "").replace(/_/g, " ");
-                return name.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+            getCleanName(file) {
+                // Specific Overrides
+                const mapping = {
+                    "menu_principal.png": "Exterior Reactor 4",
+                    "control_room_1.png": "Sala de Control A",
+                    "control_room_2.png": "Sala de Control B",
+                    "control_room_3.png": "Sala de Control C",
+                    "control_room_3_quemado.png": "Reactor 4 (Colapso)",
+                    "control_room_4.png": "Sala de Control D"
+                };
+                if (mapping[file]) return mapping[file];
+
+                // Generic Formatter
+                let n = file.split('.')[0].replace(/_/g, " ");
+                return n.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
             },
 
-            buildGallery() {
+            renderGallery() {
                 const list = document.getElementById('scene-list');
+                if (!list) return;
+                
+                // Sort scenes by name to keep order consistent
+                const sortedScenes = Object.values(App.state.scenes).sort((a, b) => a.title.localeCompare(b.title));
+                
                 list.innerHTML = "";
-                Object.values(App.state.scenes).forEach(scene => {
+                sortedScenes.forEach(scene => {
                     const el = document.createElement('div');
-                    el.className = "scene-item";
+                    el.className = "scene-item" + (App.state.currentScene === scene.id ? " active" : "");
                     el.innerHTML = `<strong>${scene.title}</strong>`;
                     el.onclick = () => App.Scene.load(scene.id);
                     list.appendChild(el);
@@ -307,85 +349,77 @@
             }
         };
 
-        // ── SCENE: TRANSITIONS & LOADING ───────────────────────────────
+        // ── SCENE: MANAGEMENT & LOGIC ───────────────────────────────
         App.Scene = {
-            async load(id) {
-                if (App.state.locked && App.state.currentScene) return;
-                console.log(`[Scene] Loading ${id}...`);
+            load(id) {
+                if (App.state.locked && App.state.currentScene !== id) return;
+                console.log(`[App] Transitioning to ${id}`);
                 
                 const loader = document.getElementById('scene-loader');
                 loader.classList.add('active');
 
-                try {
-                    const sky = document.getElementById('sky');
-                    sky.setAttribute('src', `Imagenes/${id}`);
-                    
+                // Cleanup existing scene items
+                App.Hotspots.clear();
+                App.VRMenu.clear();
+
+                setTimeout(() => {
+                    document.getElementById('sky').setAttribute('src', `Imagenes/${id}`);
                     App.state.currentScene = id;
-                    document.getElementById('ui-scene-name').textContent = App.state.scenes[id]?.title || "EXTERIOR";
+                    document.getElementById('ui-scene-name').textContent = App.state.scenes[id]?.title || "PROCESANDO...";
                     
-                    // Cleanup & Rebuild
-                    App.Hotspots.clear();
+                    // Rebuild scene specific systems
                     App.Hotspots.spawn(id);
-                    App.UI.updateRegistry(id);
-                    App.VRMenu.rebuild();
+                    App.VRMenu.build();
+                    App.Discovery.renderGallery();
                     
-                    // Audio
-                    const ambient = document.getElementById('snd-ambient');
-                    if (ambient.paused) ambient.play();
-
+                    loader.classList.remove('active');
                     this.setCooldown(2500);
-                } catch (e) {
-                    console.error("[Scene] Load Error:", e);
-                }
-
-                setTimeout(() => loader.classList.remove('active'), 800);
+                }, 800);
             },
 
             setCooldown(ms) {
                 App.state.locked = true;
-                const overlay = document.getElementById('cooldown-overlay');
+                const ov = document.getElementById('cooldown-overlay');
                 const fill = document.getElementById('cooldown-fill');
-                
-                overlay.classList.add('active');
+                ov.classList.add('active');
                 fill.style.transition = "none";
                 fill.style.width = "0%";
-                
                 setTimeout(() => {
                     fill.style.transition = `width ${ms}ms linear`;
                     fill.style.width = "100%";
                 }, 50);
-
                 setTimeout(() => {
                     App.state.locked = false;
-                    overlay.classList.remove('active');
+                    ov.classList.remove('active');
                 }, ms);
             }
         };
 
-        // ── HOTSPOTS: INFORMATION MARKERS ──────────────────────────────
+        // ── HOTSPOTS: MARKERS & INFO ────────────────────────────────
         App.Hotspots = {
-            data: {
+            // Hotspot Database
+            db: {
                 "menu_principal.png": [
-                    { pos: "2 1.5 -4", title: "Sarcófago", desc: "La estructura de acero diseñada para contener los restos del Reactor 4." },
-                    { pos: "-3 1.2 -3", title: "Nivel de Radiación", desc: "En esta zona exterior el nivel es de 0.15 μSv/h." }
+                    { pos: "1 1.5 -4", title: "SARCOFAGO", desc: "Contenedor de seguridad de 100 años diseñado para cubrir el reactor destruido." },
+                    { pos: "-2.5 1.2 -3.5", title: "ZONA DE EXCLUSION", desc: "Radio de 30 km donde la vida humana fue evacuada permanentemente." }
                 ],
                 "control_room_1.png": [
-                    { pos: "0 1.8 -3", title: "Paneles AZ-5", desc: "El botón de parada de emergencia que irónicamente gatilló el desastre." }
+                    { pos: "0 1.8 -3.5", title: "SALA DE CONTROL A", desc: "Puesto de mando principal donde se ejecutaba el test de seguridad fatidico." }
                 ],
                 "control_room_3_quemado.png": [
-                    { pos: "0 1.5 -3", title: "NÚCLEO EXPUESTO", desc: "Radiación letal. Los operarios aquí recibieron dosis fatales en minutos.", danger: true }
+                    { pos: "0 1.5 -3", title: "NUCLEO FUNDIDO", desc: "El centro del desastre. La radiación aqui fundio el concreto y el acero.", danger: true }
                 ]
             },
 
             spawn(id) {
-                const container = document.getElementById('hotspot-container');
-                const items = this.data[id] || [];
+                const root = document.getElementById('hotspot-container');
+                const items = this.db[id] || [];
                 
                 items.forEach(h => {
                     const el = document.createElement('a-entity');
                     el.setAttribute('class', 'clickable');
                     el.setAttribute('position', h.pos);
-                    el.setAttribute('geometry', 'primitive: circle; radius: 0.12');
+                    el.setAttribute('geometry', 'primitive: circle; radius: 0.15');
                     el.setAttribute('material', {
                         color: h.danger ? '#ff0000' : '#ff6600',
                         shader: 'flat',
@@ -393,24 +427,23 @@
                         opacity: 0.8
                     });
                     el.setAttribute('look-at', '[camera]');
-                    el.setAttribute('animation__pulse', 'property: scale; from: 1 1 1; to: 1.2 1.2 1.2; dur: 800; dir: alternate; loop: true');
+                    el.setAttribute('animation__pulse', 'property: scale; from: 1 1 1; to: 1.2 1.2 1.2; dur: 1000; dir: alternate; loop: true');
                     
-                    el.addEventListener('click', () => this.showInfo(h));
-                    container.appendChild(el);
+                    el.addEventListener('click', () => this.showPanel(h));
+                    root.appendChild(el);
                 });
             },
 
-            showInfo(h) {
+            showPanel(h) {
                 const root = document.getElementById('panel-container');
                 root.innerHTML = "";
-                
                 const panel = document.createElement('a-entity');
                 panel.setAttribute('look-at', '[camera]');
                 panel.innerHTML = `
-                    <a-plane width="2.5" height="1.2" material="color: #000; opacity: 0.9; shader: flat">
-                        <a-text value="${h.title.toUpperCase()}" align="center" width="4" position="0 0.35 0.01" color="#ff6600" font="roboto"></a-text>
-                        <a-text value="${h.desc}" align="center" width="3" position="0 -0.1 0.01" wrap-count="30"></a-text>
-                        <a-plane class="clickable" width="0.6" height="0.2" position="0 -0.45 0.02" material="color: #333">
+                    <a-plane width="2.8" height="1.4" material="color: #000; opacity: 0.95; shader: flat">
+                        <a-text value="${h.title}" align="center" width="4" position="0 0.45 0.02" color="#ff6600"></a-text>
+                        <a-text value="${h.desc}" align="center" width="3" position="0 -0.1 0.02" wrap-count="30"></a-text>
+                        <a-plane class="clickable" width="0.7" height="0.25" position="0 -0.45 0.03" material="color: #222">
                             <a-text value="CERRAR" align="center" width="2" position="0 0 0.01"></a-text>
                         </a-plane>
                     </a-plane>
@@ -425,25 +458,26 @@
             }
         };
 
-        // ── VR MENU: IN-SCENE INTERFACE ───────────────────────────────
+        // ── VR MENU: IN-SCENE 3D HUD ────────────────────────────────
         App.VRMenu = {
-            rebuild() {
-                const root = document.getElementById('vr-nav-container');
+            build() {
+                const root = document.getElementById('vr-ui-container');
                 root.innerHTML = "";
                 
-                // Floating Menu in front of user
                 const menu = document.createElement('a-entity');
-                menu.setAttribute('position', '0 0.8 -3');
-                menu.setAttribute('rotation', '-20 0 0');
+                menu.setAttribute('position', '0 0.8 -3.5');
+                menu.setAttribute('rotation', '-15 0 0');
 
+                // Panel Background
                 const bg = document.createElement('a-plane');
-                bg.setAttribute('width', '2.5');
-                bg.setAttribute('height', '0.4');
-                bg.setAttribute('material', 'color: #000; opacity: 0.7; shader: flat');
+                bg.setAttribute('width', '3');
+                bg.setAttribute('height', '0.5');
+                bg.setAttribute('material', 'color: #000; opacity: 0.8; shader: flat');
                 
-                const btnPrev = this.createBtn("< ANTERIOR", -0.8, () => this.nav(-1));
-                const btnHome = this.createBtn("GALERIA", 0, () => document.getElementById('ui-btn-menu').click());
-                const btnNext = this.createBtn("SIGUIENTE >", 0.8, () => this.nav(1));
+                // Controls
+                const btnPrev = this.createBtn("< VOLVER", -1, () => this.navigate(-1));
+                const btnHome = this.createBtn("MENU INICIO", 0, () => App.Scene.load("menu_principal.png"));
+                const btnNext = this.createBtn("SIGUIENTE >", 1, () => this.navigate(1));
 
                 menu.appendChild(bg);
                 menu.appendChild(btnPrev);
@@ -454,17 +488,17 @@
 
             createBtn(text, x, cb) {
                 const el = document.createElement('a-entity');
-                el.setAttribute('position', `${x} 0 0.01`);
+                el.setAttribute('position', `${x} 0 0.02`);
                 el.setAttribute('class', 'clickable');
                 
                 const txt = document.createElement('a-text');
                 txt.setAttribute('value', text);
                 txt.setAttribute('align', 'center');
-                txt.setAttribute('width', '2');
+                txt.setAttribute('width', '2.5');
                 
                 const hit = document.createElement('a-plane');
-                hit.setAttribute('width', '0.7');
-                hit.setAttribute('height', '0.3');
+                hit.setAttribute('width', '0.8');
+                hit.setAttribute('height', '0.4');
                 hit.setAttribute('material', 'visible: false');
 
                 el.appendChild(txt);
@@ -473,35 +507,28 @@
                 return el;
             },
 
-            nav(dir) {
+            navigate(dir) {
                 const keys = Object.keys(App.state.scenes);
-                const curIdx = keys.indexOf(App.state.currentScene);
-                let nextIdx = curIdx + dir;
-                if (nextIdx < 0) nextIdx = keys.length - 1;
-                if (nextIdx >= keys.length) nextIdx = 0;
-                App.Scene.load(keys[nextIdx]);
-            }
+                const cur = keys.indexOf(App.state.currentScene);
+                let next = cur + dir;
+                if (next < 0) next = keys.length - 1;
+                if (next >= keys.length) next = 0;
+                App.Scene.load(keys[next]);
+            },
+
+            clear() { document.getElementById('vr-ui-container').innerHTML = ""; }
         };
 
-        // ── UI: 2D INTERFACE BINDINGS ─────────────────────────────────
+        // ── UI: DOM WRAPPER ──────────────────────────────────────────
         App.UI = {
             init() {
                 document.getElementById('btn-start').onclick = () => App.start();
                 document.getElementById('ui-btn-menu').onclick = () => document.getElementById('drawer').classList.toggle('open');
                 document.getElementById('ui-btn-vr').onclick = () => document.querySelector('a-scene').enterVR();
-            },
-            updateRegistry(id) {
-                const items = document.querySelectorAll('.scene-item');
-                items.forEach(el => {
-                    el.classList.remove('active');
-                    if (el.textContent.includes(App.state.scenes[id]?.title)) el.classList.add('active');
-                });
             }
         };
 
-        // Start everything
         window.onload = () => App.init();
-
     </script>
 </body>
 </html>
