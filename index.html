@@ -66,13 +66,13 @@
         .launcher-btn:disabled { opacity: 0.3; cursor: wait; }
 
         /* ── UI SYSTEM ────────────────────────────────────── */
-        #ui-system { position: fixed; inset: 0; pointer-events: none; z-index: 500; opacity: 0; transition: opacity 1.5s var(--ease); }
-        #ui-system.visible { opacity: 1; }
+        #ui-system { position: fixed; inset: 0; pointer-events: none; z-index: 500; opacity: 0; transition: opacity 0.5s var(--ease); }
+        #ui-system.visible { opacity: 1; pointer-events: auto; }
 
         .topbar {
-            position: absolute; top: 0; left: 0; right: 0; padding: 40px 60px;
+            position: absolute; top: 0; left: 0; right: 0; padding: 20px 40px;
             display: flex; align-items: center; justify-content: space-between;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
             pointer-events: auto;
         }
         .btn-ui {
@@ -85,11 +85,13 @@
         #drawer {
             position: absolute; top: 0; left: 0; width: 400px; height: 100%;
             background: var(--glass); backdrop-filter: blur(50px); border-right: 1px solid var(--glass-border);
-            transform: translateX(-100%); transition: transform 0.8s var(--ease);
+            transform: translateX(-100%); transition: transform 0.6s var(--ease);
             display: flex; flex-direction: column; pointer-events: auto;
         }
         #drawer.open { transform: translateX(0); }
-        .drawer-head { padding: 60px 40px; border-bottom: 1px solid var(--glass-border); }
+        .drawer-head { padding: 60px 40px; border-bottom: 1px solid var(--glass-border); position: relative; }
+        .btn-close-drawer { position: absolute; top: 20px; right: 20px; background: transparent; border: none; color: white; cursor: pointer; font-size: 1.2rem; opacity: 0.5; transition: 0.3s; }
+        .btn-close-drawer:hover { opacity: 1; transform: rotate(90deg); }
         
         #scene-list { flex: 1; overflow-y: auto; padding: 30px; }
         .scene-item {
@@ -138,7 +140,10 @@
             <button class="btn-ui" id="ui-btn-vr">Entrar VR</button>
         </div>
         <div id="drawer">
-            <div class="drawer-head"><h3 style="letter-spacing: 0.3em; color: var(--primary);">REGISTROS</h3></div>
+            <div class="drawer-head">
+                <button class="btn-close-drawer" id="ui-close-drawer">×</button>
+                <h3 style="letter-spacing: 0.3em; color: var(--primary);">REGISTROS</h3>
+            </div>
             <div id="scene-list"></div>
         </div>
         <div class="scene-hud">
@@ -424,21 +429,33 @@
 
             spawn(id) {
                 const root = document.getElementById('hotspot-container');
-                const items = this.db[id] || [];
+                let items = this.db[id];
+                
+                // If no manual hotspots, create a generic one for discovery
+                if (!items) {
+                    items = [{ pos: "2 1.6 -3", title: "NUEVO SECTOR", desc: "Este sector ha sido detectado por el sistema de escaneo automático. No hay registros históricos detallados para este punto aún." }];
+                }
                 
                 items.forEach(h => {
                     const el = document.createElement('a-entity');
                     el.setAttribute('class', 'clickable');
                     el.setAttribute('position', h.pos);
-                    el.setAttribute('geometry', 'primitive: circle; radius: 0.15');
+                    el.setAttribute('geometry', 'primitive: circle; radius: 0.12');
                     el.setAttribute('material', {
-                        color: h.danger ? '#ff0000' : '#ff6600',
+                        color: h.danger ? '#ff3300' : '#ff6600',
                         shader: 'flat',
                         side: 'double',
-                        opacity: 0.8
+                        opacity: 0.9
                     });
+                    
+                    // Add a glowing border
+                    const ring = document.createElement('a-entity');
+                    ring.setAttribute('geometry', 'primitive: ring; radiusInner: 0.13; radiusOuter: 0.15');
+                    ring.setAttribute('material', 'color: #fff; shader: flat; opacity: 0.4');
+                    el.appendChild(ring);
+
                     el.setAttribute('look-at', '[camera]');
-                    el.setAttribute('animation__pulse', 'property: scale; from: 1 1 1; to: 1.2 1.2 1.2; dur: 1000; dir: alternate; loop: true');
+                    el.setAttribute('animation__pulse', 'property: scale; from: 1 1 1; to: 1.15 1.15 1.15; dur: 1000; dir: alternate; loop: true');
                     
                     el.addEventListener('click', () => this.showPanel(h));
                     root.appendChild(el);
@@ -448,18 +465,34 @@
             showPanel(h) {
                 const root = document.getElementById('panel-container');
                 root.innerHTML = "";
+                
+                // Play sound
+                const click = document.getElementById('snd-click');
+                if (click) click.play();
+
                 const panel = document.createElement('a-entity');
+                // Position panel slightly in front of the hotspot to avoid blocking
+                panel.setAttribute('position', '0 0 0.5'); 
                 panel.setAttribute('look-at', '[camera]');
+                
                 panel.innerHTML = `
-                    <a-plane width="2.8" height="1.4" material="color: #000; opacity: 0.95; shader: flat">
-                        <a-text value="${h.title}" align="center" width="4" position="0 0.45 0.02" color="#ff6600"></a-text>
+                    <a-plane width="2.8" height="1.4" material="color: #000; opacity: 0.98; shader: flat">
+                        <a-text value="${h.title.toUpperCase()}" align="center" width="4" position="0 0.45 0.02" color="#ff6600"></a-text>
                         <a-text value="${h.desc}" align="center" width="3" position="0 -0.1 0.02" wrap-count="30"></a-text>
-                        <a-plane class="clickable" width="0.7" height="0.25" position="0 -0.45 0.03" material="color: #222">
-                            <a-text value="CERRAR" align="center" width="2" position="0 0 0.01"></a-text>
+                        <a-plane class="clickable" width="0.8" height="0.3" position="0 -0.5 0.05" material="color: #ff6600; shader: flat">
+                            <a-text value="CERRAR" align="center" width="2.5" position="0 0 0.01" color="#000"></a-text>
                         </a-plane>
                     </a-plane>
                 `;
-                panel.querySelector('a-plane').addEventListener('click', () => root.innerHTML = "");
+                
+                const closeBtn = panel.querySelector('a-plane.clickable');
+                closeBtn.addEventListener('mouseenter', () => closeBtn.setAttribute('material', 'color', '#ffffff'));
+                closeBtn.addEventListener('mouseleave', () => closeBtn.setAttribute('material', 'color', '#ff6600'));
+                closeBtn.addEventListener('click', () => {
+                    root.innerHTML = "";
+                    if (click) click.play();
+                });
+                
                 root.appendChild(panel);
             },
 
@@ -476,19 +509,20 @@
                 root.innerHTML = "";
                 
                 const menu = document.createElement('a-entity');
-                menu.setAttribute('position', '0 0.8 -3.5');
+                menu.setAttribute('position', '0 0.8 -3');
                 menu.setAttribute('rotation', '-15 0 0');
 
                 // Panel Background
                 const bg = document.createElement('a-plane');
-                bg.setAttribute('width', '3');
-                bg.setAttribute('height', '0.5');
-                bg.setAttribute('material', 'color: #000; opacity: 0.8; shader: flat');
+                bg.setAttribute('width', '2.5');
+                bg.setAttribute('height', '0.45');
+                bg.setAttribute('material', 'color: #111; opacity: 0.9; shader: flat');
+                bg.setAttribute('position', '0 0 0');
                 
                 // Controls
-                const btnPrev = this.createBtn("< VOLVER", -1, () => this.navigate(-1));
-                const btnHome = this.createBtn("MENU INICIO", 0, () => App.Scene.load("menu_principal.png"));
-                const btnNext = this.createBtn("SIGUIENTE >", 1, () => this.navigate(1));
+                const btnPrev = this.createBtn("< ANTERIOR", -0.85, () => this.navigate(-1));
+                const btnHome = this.createBtn("INICIO", 0, () => App.Scene.load("menu_principal.png"));
+                const btnNext = this.createBtn("SIGUIENTE >", 0.85, () => this.navigate(1));
 
                 menu.appendChild(bg);
                 menu.appendChild(btnPrev);
@@ -499,21 +533,26 @@
 
             createBtn(text, x, cb) {
                 const el = document.createElement('a-entity');
-                el.setAttribute('position', `${x} 0 0.02`);
+                el.setAttribute('position', `${x} 0 0.05`);
                 el.setAttribute('class', 'clickable');
                 
                 const txt = document.createElement('a-text');
                 txt.setAttribute('value', text);
                 txt.setAttribute('align', 'center');
-                txt.setAttribute('width', '2.5');
+                txt.setAttribute('width', '2.2');
+                txt.setAttribute('color', '#fff');
+                txt.setAttribute('position', '0 0 0.01');
                 
                 const hit = document.createElement('a-plane');
-                hit.setAttribute('width', '0.8');
-                hit.setAttribute('height', '0.4');
-                hit.setAttribute('material', 'visible: false');
+                hit.setAttribute('width', '0.7');
+                hit.setAttribute('height', '0.35');
+                hit.setAttribute('material', 'color: #ff6600; opacity: 0; shader: flat');
 
                 el.appendChild(txt);
                 el.appendChild(hit);
+                
+                el.addEventListener('mouseenter', () => hit.setAttribute('material', 'opacity', '0.2'));
+                el.addEventListener('mouseleave', () => hit.setAttribute('material', 'opacity', '0'));
                 el.addEventListener('click', cb);
                 return el;
             },
@@ -534,7 +573,8 @@
         App.UI = {
             init() {
                 document.getElementById('btn-start').onclick = () => App.start();
-                document.getElementById('ui-btn-menu').onclick = () => document.getElementById('drawer').classList.toggle('open');
+                document.getElementById('ui-btn-menu').onclick = () => document.getElementById('drawer').classList.add('open');
+                document.getElementById('ui-close-drawer').onclick = () => document.getElementById('drawer').classList.remove('open');
                 document.getElementById('ui-btn-vr').onclick = () => document.querySelector('a-scene').enterVR();
             }
         };
