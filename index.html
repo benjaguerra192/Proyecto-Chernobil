@@ -100,9 +100,11 @@
         }
         .scene-item:hover { background: rgba(255,102,0,0.08); border-color: rgba(255,102,0,0.2); }
         .scene-item.active { background: rgba(255,102,0,0.15); border-color: var(--primary); }
+        .scene-item-name { font-size: 0.9rem; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.05em; }
+        .scene-item-meta { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.2em; color: rgba(255,255,255,0.4); }
 
-        .scene-hud { position: absolute; bottom: 60px; left: 60px; pointer-events: none; }
-        .hud-name { font-size: 2.5rem; font-weight: 100; text-transform: uppercase; letter-spacing: 0.05em; }
+        .scene-hud { position: absolute; bottom: 60px; right: 60px; pointer-events: none; text-align: right; }
+        .hud-name { font-size: 2.5rem; font-weight: 100; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1; }
 
         /* Transition Overlays */
         #scene-loader {
