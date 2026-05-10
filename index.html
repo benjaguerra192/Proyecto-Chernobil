@@ -1,499 +1,466 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CHERNOBYL VR | Experiencia Inmersiva</title>
-    
-    <!-- SEO & Social Media -->
-    <meta name="description" content="Explora el reactor 4 de Chernobyl en una experiencia VR inmersiva y educativa.">
-    <meta name="keywords" content="Chernobyl, VR, Realidad Virtual, A-Frame, Historia, Reactor 4">
-    <meta property="og:title" content="CHERNOBYL VR | Experiencia Inmersiva">
-    <meta property="og:description" content="Recorrido histórico interactivo por la sala de control del reactor 4.">
-    <meta property="og:type" content="website">
-    <meta name="theme-color" content="#ff6600">
+    <title>CHERNOBYL VR | Enterprise Archival System V9.0</title>
+    <meta name="description" content="Sistema de archivo inmersivo 3D. Entorno de simulaciÃ³n histÃ³rica de la zona de exclusiÃ³n.">
+    <meta name="theme-color" content="#ff5500">
 
-    <!-- Fonts & A-Frame -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;600;900&display=swap" rel="stylesheet">
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --primary: #ff6600;
-            --primary-glow: rgba(255, 102, 0, 0.4);
-            --secondary: #00eeff;
-            --danger: #ff0000;
+            --primary: #ff5500;
+            --primary-dim: rgba(255,85,0,0.15);
+            --primary-glow: rgba(255,85,0,0.6);
+            --primary-soft: rgba(255,180,80,0.3);
             --bg: #030303;
-            --glass: rgba(10, 10, 10, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --font: 'Inter', sans-serif;
-            --ease: cubic-bezier(0.23, 1, 0.32, 1);
+            --surface: rgba(10,10,10,0.94);
+            --surface-light: rgba(20,20,20,0.88);
+            --border: rgba(255,255,255,0.06);
+            --border-light: rgba(255,255,255,0.12);
+            --text: #e0e0e0;
+            --text-dim: #666;
+            --text-bright: #ffffff;
+            --font-main: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            --font-code: 'JetBrains Mono', monospace;
+            --ease: cubic-bezier(0.25, 1, 0.5, 1);
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+            --radius: 3px;
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 40px;
         }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); font-family: var(--font-main); color: var(--text); overflow: hidden; height: 100dvh; width: 100dvw; user-select: none; -webkit-font-smoothing: antialiased; }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: var(--bg); font-family: var(--font); color: white; overflow: hidden; height: 100dvh; }
+        /* === OVERLAY === */
+        .overlay { position: fixed; inset: 0; z-index: 9000; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(30px) saturate(1.2); transition: opacity 1.2s var(--ease-out), transform 1.2s var(--ease-out); }
+        .overlay.hidden { opacity: 0; pointer-events: none; transform: scale(1.02); }
 
-        /* ── CINEMATIC LAUNCHER ─────────────────────────── */
+        /* === LAUNCHER === */
         #launcher {
-            position: fixed; inset: 0; z-index: 9999;
-            background: radial-gradient(circle at center, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.95) 100%);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: opacity 2.5s var(--ease), visibility 2.5s;
-            backdrop-filter: blur(10px);
+            background:
+                radial-gradient(circle at 50% 42%, rgba(255,85,0,0.12), transparent 34%),
+                linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.92)),
+                url('./Imagenes/menu_principal.png') center/cover no-repeat;
+            padding: 28px;
+            text-align: center;
         }
-        #launcher.hidden { opacity: 0; visibility: hidden; }
-
-        .launcher-content { position: relative; text-align: center; max-width: 800px; padding: 40px; animation: contentEnter 2s var(--ease); }
-        @keyframes contentEnter { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-
-        .launcher-eyebrow { font-size: 0.6rem; letter-spacing: 0.8em; color: var(--primary); text-transform: uppercase; margin-bottom: 20px; font-weight: 800; }
-        #launcher h1 {
-            font-size: clamp(3.5rem, 15vw, 7.5rem); font-weight: 900; letter-spacing: -0.04em;
-            text-transform: uppercase; line-height: 0.85; margin-bottom: 60px;
-            color: #fff; filter: drop-shadow(0 0 30px var(--primary-glow));
+        .launch-tag { font-family: var(--font-code); font-size: 0.65rem; letter-spacing: 0.55em; color: var(--primary); text-transform: uppercase; margin-bottom: var(--spacing-lg); font-weight: 700; animation: pulse 4s infinite; }
+        .launch-title {
+            font-size: clamp(3.1rem, 11vw, 7.4rem);
+            font-family: var(--font-main);
+            font-weight: 300;
+            text-transform: uppercase;
+            line-height: 0.95;
+            letter-spacing: 0.12em;
+            text-shadow: 0 0 40px var(--primary-soft), 0 0 80px rgba(255,85,0,0.1);
+            margin-bottom: 42px;
+            color: var(--text-bright);
         }
-
-        .launcher-btn {
-            background: transparent; border: 1px solid var(--primary); color: var(--primary);
-            padding: 24px 80px; font-size: 0.75rem; letter-spacing: 0.5em; font-weight: 700;
-            text-transform: uppercase; cursor: pointer; transition: all 0.5s var(--ease);
-            background: rgba(255, 102, 0, 0.05);
+        .btn-launch {
+            background: rgba(0,0,0,0.42);
+            border: 1px solid rgba(255,255,255,0.18);
+            color: var(--text);
+            min-width: min(360px, 82vw);
+            padding: 17px 28px;
+            font-size: 0.75rem;
+            letter-spacing: 0.34em;
+            font-weight: 700;
+            font-family: var(--font-code);
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.4s var(--ease);
+            position: relative;
+            border-radius: 2px;
+            backdrop-filter: blur(8px);
         }
-        .launcher-btn:hover:not(:disabled) { background: var(--primary); color: black; box-shadow: 0 0 50px var(--primary-glow); transform: scale(1.05); }
-        .launcher-btn:disabled { opacity: 0.3; cursor: wait; }
+        .btn-launch:hover:not(:disabled) {
+            border-color: var(--primary);
+            color: #000;
+            background: var(--primary);
+            box-shadow: 0 0 40px var(--primary-glow), 0 4px 20px rgba(0,0,0,0.5);
+            transform: translateY(-2px);
+        }
+        .btn-launch:disabled { opacity: 0.15; cursor: wait; border-style: dashed; }
 
-        /* ── UI SYSTEM ────────────────────────────────────── */
-        #ui-system { position: fixed; inset: 0; pointer-events: none; z-index: 500; opacity: 0; transition: opacity 0.5s var(--ease); }
-        #ui-system.visible { opacity: 1; pointer-events: auto; }
-
-        .topbar {
-            position: absolute; top: 0; left: 0; right: 0; padding: 20px 40px;
-            display: flex; align-items: center; justify-content: space-between;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+        /* === HUD === */
+        #hud { position: fixed; inset: 0; pointer-events: none; z-index: 1000; opacity: 0; transition: opacity 1.5s var(--ease-out); }
+        #hud.active { opacity: 1; }
+        .hud-top {
+            position: absolute; top: 0; left: 0; right: 0;
+            padding: 24px 32px;
+            display: flex; gap: var(--spacing-sm); align-items: center;
             pointer-events: auto;
+            background: linear-gradient(180deg, rgba(0,0,0,0.74) 0%, rgba(0,0,0,0.34) 58%, transparent 100%);
         }
-        .btn-ui {
-            background: var(--glass); border: 1px solid var(--glass-border); color: white;
-            padding: 14px 28px; font-size: 0.55rem; letter-spacing: 0.3em; font-weight: 700;
-            text-transform: uppercase; cursor: pointer; transition: all 0.3s;
+        .hud-top-right { margin-left: auto; }
+        .hud-btn {
+            background: rgba(5,5,5,0.78);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.68);
+            min-height: 36px;
+            padding: 10px 18px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: var(--font-code);
+            font-size: 0.65rem;
+            letter-spacing: 0.14em;
+            border-radius: var(--radius);
+            backdrop-filter: blur(8px);
+            transition: all 0.3s var(--ease);
         }
-        .btn-ui:hover { background: white; color: black; transform: translateY(-2px); }
+        .hud-btn:hover {
+            color: var(--text-bright);
+            border-color: var(--border-light);
+            background: rgba(255,255,255,0.06);
+            box-shadow: 0 0 12px rgba(255,255,255,0.03);
+        }
+        .hud-btn--vr { border-color: var(--primary); color: var(--primary); }
+        .hud-btn--vr:hover { background: var(--primary); color: #000; box-shadow: 0 0 20px var(--primary-glow); }
+        .hud-bottom {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 34px var(--spacing-xl) 28px;
+            pointer-events: none;
+            background: linear-gradient(0deg, rgba(0,0,0,0.84) 0%, rgba(0,0,0,0.36) 64%, transparent 100%);
+            border-bottom: 2px solid rgba(255,85,0,0.9);
+        }
+        .hud-scene-title {
+            font-size: clamp(2rem, 5vw, 3.1rem);
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 0.10em;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.8), 0 0 15px var(--primary-soft);
+        }
+        .hud-scene-meta {
+            font-family: var(--font-code);
+            color: var(--primary);
+            font-size: clamp(0.62rem, 1.5vw, 0.8rem);
+            letter-spacing: 0.24em;
+            margin-top: var(--spacing-sm);
+            opacity: 0.85;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+        }
 
-        #drawer {
-            position: absolute; top: 0; left: 0; width: 400px; height: 100%;
-            background: var(--glass); backdrop-filter: blur(50px); border-right: 1px solid var(--glass-border);
-            transform: translateX(-100%); transition: transform 0.6s var(--ease);
-            display: flex; flex-direction: column; pointer-events: auto;
+        /* === SIDEBAR === */
+        #sidebar {
+            position: absolute; left: -300px; top: 80px; bottom: 80px; width: 280px;
+            background: var(--surface);
+            border-right: 1px solid var(--primary);
+            transition: left 0.35s var(--ease-out);
+            display: flex; flex-direction: column;
+            pointer-events: auto;
+            backdrop-filter: blur(16px);
+            z-index: 1500;
+            border-radius: 0 var(--radius) var(--radius) 0;
         }
-        #drawer.open { transform: translateX(0); }
-        .drawer-head { padding: 60px 40px; border-bottom: 1px solid var(--glass-border); position: relative; }
-        .btn-close-drawer { position: absolute; top: 20px; right: 20px; background: transparent; border: none; color: white; cursor: pointer; font-size: 1.2rem; opacity: 0.5; transition: 0.3s; }
-        .btn-close-drawer:hover { opacity: 1; transform: rotate(90deg); }
-        
-        #scene-list { flex: 1; overflow-y: auto; padding: 30px; }
-        .scene-item {
-            padding: 24px; border-radius: 2px; cursor: pointer; border: 1px solid transparent;
-            transition: all 0.4s var(--ease); margin-bottom: 12px; background: rgba(255,255,255,0.02);
+        #sidebar.open { left: 0; }
+        .sidebar-head {
+            padding: var(--spacing-md) 20px;
+            font-family: var(--font-code);
+            color: var(--primary);
+            font-size: 0.6rem;
+            letter-spacing: 0.25em;
+            border-bottom: 1px solid var(--border);
         }
-        .scene-item:hover { background: rgba(255,102,0,0.08); border-color: rgba(255,102,0,0.2); }
-        .scene-item.active { background: rgba(255,102,0,0.15); border-color: var(--primary); }
-        .scene-hud { 
-            position: absolute; bottom: 50px; right: 50px; 
-            pointer-events: none; text-align: right; z-index: 400;
-            transition: opacity 0.4s var(--ease);
+        .sidebar-list { flex: 1; overflow-y: auto; }
+        .sidebar-item {
+            display: block; width: 100%; text-align: left;
+            background: transparent; border: none;
+            color: var(--text-dim);
+            padding: 14px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            transition: all 0.25s var(--ease);
+            font-family: var(--font-code);
+            font-size: 0.68rem;
+            letter-spacing: 0.05em;
+            border-left: 3px solid transparent;
         }
-        #drawer.open ~ .scene-hud { opacity: 0; }
-        .hud-name { font-size: 2.2rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1; color: white; }
-        .hud-sub { font-size: 0.7rem; letter-spacing: 0.5em; color: var(--primary); margin-top: 10px; font-weight: 300; }
+        .sidebar-item:hover, .sidebar-item.active {
+            background: var(--primary-dim);
+            color: var(--text-bright);
+            border-left-color: var(--primary);
+            padding-left: 24px;
+        }
 
-        /* Transition Overlays */
-        #scene-loader {
-            position: fixed; inset: 0; z-index: 8000; background: black;
-            display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.6s;
+        /* === BLACKOUT + LOADER === */
+        #blackout { position: fixed; inset: 0; background: #000; z-index: 8000; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
+        #blackout.active { opacity: 1; pointer-events: auto; }
+        .loader-wrap { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); display: flex; flex-direction: column; align-items: center; gap: var(--spacing-lg); }
+        .loader-spin {
+            width: 40px; height: 40px;
+            border: 1.5px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
         }
-        #scene-loader.active { display: flex; opacity: 1; }
-        .loader-spinner { width: 50px; height: 50px; border: 1px solid rgba(255,102,0,0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        .loader-label {
+            font-family: var(--font-code);
+            font-size: 0.55rem;
+            letter-spacing: 0.5em;
+            color: var(--primary);
+            opacity: 0.8;
+        }
+
+        /* === TELEMETRY === */
+        #telemetry {
+            position: fixed; bottom: var(--spacing-md); right: var(--spacing-md);
+            width: 380px; max-height: 200px;
+            background: rgba(5,5,5,0.94);
+            border: 1px solid #1a1a1a;
+            padding: 10px;
+            font-family: var(--font-code);
+            font-size: 9px;
+            color: #555;
+            z-index: 10000;
+            overflow-y: auto;
+            display: none;
+            border-radius: var(--radius);
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        body.debug #telemetry { display: block; }
+
+        @media (max-width: 720px) {
+            .launch-tag { font-size: 0.55rem; letter-spacing: 0.32em; }
+            .launch-title { letter-spacing: 0.08em; }
+            .hud-top {
+                padding: 14px;
+                flex-wrap: wrap;
+                align-content: flex-start;
+            }
+            .hud-btn {
+                flex: 1 1 auto;
+                min-width: 0;
+                padding: 10px 12px;
+                font-size: 0.58rem;
+                letter-spacing: 0.08em;
+            }
+            .hud-top-right { margin-left: 0; }
+            .hud-bottom { padding: 24px 18px 22px; }
+            .hud-scene-meta { letter-spacing: 0.12em; line-height: 1.6; }
+            #sidebar {
+                top: 118px;
+                bottom: 96px;
+                width: min(86vw, 300px);
+                left: min(-86vw, -300px);
+            }
+        }
+
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        #cooldown-overlay {
-            position: fixed; inset: 0; z-index: 8500; pointer-events: none;
-            display: flex; align-items: flex-end; justify-content: center; padding-bottom: 100px; opacity: 0; transition: opacity 0.5s;
-        }
-        #cooldown-overlay.active { opacity: 1; }
-        .cooldown-bar { width: 300px; height: 1px; background: rgba(255,255,255,0.1); }
-        .cooldown-fill { height: 100%; width: 0%; background: var(--primary); transition: width 2.5s linear; }
+        @keyframes pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
     </style>
 </head>
+
 <body>
+    <!-- LAUNCHER -->
+    <div id="launcher" class="overlay">
+        <div class="launch-tag">INIT SEQUENCE // 1986.04.26</div>
+        <h1 class="launch-title">Chernobyl</h1>
+        <button id="btn-start" class="btn-launch" disabled>ESTABLECIENDO ENLACE...</button>
+    </div>
 
-    <!-- Cinematic Entry Launcher -->
-    <div id="launcher">
-        <div class="launcher-content">
-            <div class="launcher-eyebrow">Visual Archives | 04.26.1986</div>
-            <h1>Chernobyl</h1>
-            <button id="btn-start" class="launcher-btn" disabled>Sincronizando Archivos...</button>
+    <!-- BLACKOUT -->
+    <div id="blackout">
+        <div class="loader-wrap" id="loader" style="display:none">
+            <div class="loader-spin"></div>
+            <div class="loader-label">CARGANDO SECTOR</div>
         </div>
     </div>
 
-    <!-- Desktop/Mobile UI -->
-    <div id="ui-system">
-        <div class="topbar">
-            <button class="btn-ui" id="ui-btn-menu">Explorar Galerías</button>
-            <button class="btn-ui" id="ui-btn-vr">Entrar VR</button>
-        </div>
-        <div id="drawer">
-            <div class="drawer-head">
-                <button class="btn-close-drawer" id="ui-close-drawer">×</button>
-                <h3 style="letter-spacing: 0.3em; color: var(--primary);">REGISTROS</h3>
+    <!-- HUD -->
+    <div id="hud">
+        <div class="hud-top">
+            <button class="hud-btn" id="btn-gallery">â‰¡ GALERÃA</button>
+            <button class="hud-btn" id="btn-prev">â—€ ANTERIOR</button>
+            <button class="hud-btn" id="btn-next">SIGUIENTE â–¶</button>
+            <div class="hud-top-right">
+                <button class="hud-btn hud-btn--vr" id="btn-vr">MODO VR</button>
             </div>
-            <div id="scene-list"></div>
         </div>
-        <div class="scene-hud">
-            <div class="hud-name" id="ui-scene-name">EXTERIOR REACTOR 4</div>
+        <div id="sidebar">
+            <div class="sidebar-head">SECTORES</div>
+            <div class="sidebar-list" id="sidebar-list"></div>
+        </div>
+        <div class="hud-bottom">
+            <div class="hud-scene-title" id="hud-title">â€”</div>
+            <div class="hud-scene-meta">CENTRAL NUCLEAR V.I. LENIN // ZONA DE EXCLUSIÃ“N</div>
         </div>
     </div>
 
-    <div id="scene-loader">
-        <div class="loader-spinner"></div>
-    </div>
+    <div id="telemetry"></div>
 
-    <div id="cooldown-overlay">
-        <div class="cooldown-bar"><div id="cooldown-fill" class="cooldown-fill"></div></div>
-    </div>
+    <!-- A-FRAME SCENE -->
+    <a-scene id="core-scene"
+        renderer="antialias: true; colorManagement: true; physicallyCorrectLights: true; logarithmicDepthBuffer: true;"
+        vr-mode-ui="enabled: false"
+        background="color: #000000">
 
-    <!-- 3D Scene -->
-    <a-scene
-        renderer="antialias: true; colorManagement: true; logarithmicDepthBuffer: true; highRefreshRate: true;"
-    <!-- VR Scene Core -->
-    <a-scene 
-        renderer="antialias: true; colorManagement: true; physicallyCorrectLights: false;"
-        cursor="fuse: false; rayOrigin: mouse"
-        raycaster="objects: .clickable; far: 50;"
-        vr-mode-ui="enabled: false">
-        
-        <a-assets>
-            <audio id="snd-click" src="https://cdn.aframe.io/360-video-example/audio/click.mp3"></audio>
-            <audio id="snd-ambient" src="Audios/ambiente.mp3" preload="auto" loop="true"></audio>
+        <a-assets id="engine-assets" timeout="30000">
+            <img id="tex-menu_principal-png"        src="./Imagenes/menu_principal.png">
+            <img id="tex-control_room_1-png"        src="./Imagenes/control_room_1.png">
+            <img id="tex-control_room_2-png"        src="./Imagenes/control_room_2.png">
+            <img id="tex-control_room_3-png"        src="./Imagenes/control_room_3.png">
+            <img id="tex-control_room_3_quemado-png" src="./Imagenes/control_room_3_quemado.png">
+            <img id="tex-control_room_4-png"        src="./Imagenes/control_room_4.png">
+            <img id="tex-reactor_roof-png"          src="./Imagenes/reactor_roof.png">
+            <img id="tex-elephants_foot-png"        src="./Imagenes/elephants_foot.png">
+            <img id="tex-pripyat_ferris_wheel-png"  src="./Imagenes/pripyat_ferris_wheel.png">
         </a-assets>
 
-        <!-- Camera System -->
-        <a-entity id="camera-rig" position="0 0 0">
-            <a-camera id="main-camera" fov="90" look-controls="pointerLockEnabled: false">
-                <!-- Gaze Cursor for Cardboard VR -->
-                <a-entity id="gaze-cursor"
-                    cursor="fuse: true; fuseTimeout: 1200"
-                    position="0 0 -1"
-                    geometry="primitive: ring; radiusInner: 0.015; radiusOuter: 0.025"
-                    material="color: white; shader: flat; opacity: 0.6"
-                    raycaster="objects: .clickable"
-                    visible="false"
-                    animation__fusing="property: scale; from: 1 1 1; to: 0.1 0.1 0.1; dur: 1200; startEvents: fusing"
-                    animation__reset="property: scale; to: 1 1 1; dur: 200; startEvents: mouseleave">
+        <!-- Player Rig -->
+        <a-entity id="player-rig" position="0 0 0">
+            <a-camera id="player-cam" fov="75" near="0.05" far="6000"
+                look-controls="pointerLockEnabled: false; magicWindowTrackingEnabled: true"
+                raycaster="objects: .interactable; far: 15; interval: 50; showLine: false">
+                
+                <!-- Reticle cursor -->
+                <a-entity id="reticle" position="0 0 -0.15" scale="0.15 0.15 0.15">
+                    <a-ring id="reticle-ring" radius-inner="0.012" radius-outer="0.018"
+                        material="color: #ffffff; shader: flat; opacity: 0.99"></a-ring>
+                    <a-circle id="reticle-dot" radius="0.005"
+                        material="color: #ff5500; shader: flat; opacity: 0.99"></a-circle>
+                </a-entity>
+
+                <!-- PERMANENT VR LOCATION TITLE (Fixed to Camera HUD) -->
+                <a-entity id="vr-location-title" position="-0.5 -0.45 -1.2" rotation="0 0 0" visible="false">
+                    <a-plane id="vr-title-txt" width="1.6" height="0.2" position="0 0 0" material="transparent: true; shader: flat; alphaTest: 0.5" pointer-events="none"></a-plane>
+                    <a-plane id="vr-subtitle-txt" width="1.6" height="0.08" position="0 -0.14 0" material="transparent: true; shader: flat; alphaTest: 0.5" pointer-events="none"></a-plane>
                 </a-entity>
             </a-camera>
         </a-entity>
 
-        <a-sky id="sky-display" radius="100" rotation="0 -90 0" segments-height="64" segments-width="64"></a-sky>
-        
-        <a-entity id="hotspot-container"></a-entity>
-        <a-entity id="panel-container" position="0 0 0"></a-entity>
-        <a-entity id="vr-menu-root"></a-entity>
+        <a-sky id="world-sky" src="#tex-menu_principal-png"
+            radius="30" material="shader: flat; color: #fff; side: back" segments-width="64" segments-height="64"></a-sky>
 
+        <!-- UI ANCHOR -- Restored to world space. Repositioned dynamically on open -->
+        <a-entity id="ui-anchor" position="0 0 0">
+            <!-- VR NAV BAR (Minimalist Glassmorphism) -->
+            <a-entity id="vr-menu" position="0 -0.5 -1.6" visible="false">
+                <a-entity rotation="-15 0 0">
+                    <!-- Premium Glass Background -->
+                    <a-plane id="vr-menu-bg" class="raycast-blocker" width="2.2" height="0.22"
+                        material="color: #020202; opacity: 0.85; transparent: true; shader: flat; side: double; alphaTest: 0.1"></a-plane>
+                    
+                    <!-- Neon Industrial Accents -->
+                    <a-plane width="2.2" height="0.003" position="0 0.11 0.001"
+                        material="color: #ff5500; shader: flat; opacity: 0.9"></a-plane>
+                    <a-plane width="2.2" height="0.002" position="0 -0.11 0.001"
+                        material="color: #ff5500; shader: flat; opacity: 0.3"></a-plane>
+
+                    <!-- PREV -->
+                    <a-plane class="ui-button" id="menu-prev" width="0.38" height="0.16" position="-0.82 0 0.006"
+                        material="color: #080808; opacity: 0.6; transparent: true; shader: flat">
+                        <a-plane id="menu-prev-txt" width="0.30" height="0.10" position="0 0 0.004"
+                            material="transparent: true; shader: flat" pointer-events="none"></a-plane>
+                    </a-plane>
+
+                    <!-- GALLERY -->
+                    <a-plane class="ui-button" id="menu-gallery" width="0.70" height="0.16" position="-0.22 0 0.006"
+                        material="color: #080808; opacity: 0.6; transparent: true; shader: flat">
+                        <a-plane id="menu-gal-txt" width="0.62" height="0.10" position="0 0 0.004"
+                            material="transparent: true; shader: flat" pointer-events="none"></a-plane>
+                    </a-plane>
+
+                    <!-- NEXT -->
+                    <a-plane class="ui-button" id="menu-next" width="0.38" height="0.16" position="0.38 0 0.006"
+                        material="color: #080808; opacity: 0.6; transparent: true; shader: flat">
+                        <a-plane id="menu-next-txt" width="0.30" height="0.10" position="0 0 0.004"
+                            material="transparent: true; shader: flat" pointer-events="none"></a-plane>
+                    </a-plane>
+
+                    <!-- CLOSE -->
+                    <a-plane class="ui-button" id="menu-close" width="0.30" height="0.16" position="0.86 0 0.006"
+                        material="color: #100202; opacity: 0.7; transparent: true; shader: flat">
+                        <a-plane id="menu-close-txt" width="0.22" height="0.10" position="0 0 0.004"
+                            material="transparent: true; shader: flat" pointer-events="none"></a-plane>
+                    </a-plane>
+                </a-entity>
+            </a-entity>
+
+            <!-- VR GALLERY MODAL (Premium) -->
+            <a-entity id="vr-gallery" position="0 0 -1.4" scale="1 1 1" visible="false">
+                <a-plane id="vr-gallery-bg" class="raycast-blocker" width="2.4" height="1.8"
+                    material="color: #020202; opacity: 0.90; transparent: true; shader: flat; side: double; alphaTest: 0.1"></a-plane>
+                <a-plane width="2.4" height="0.004" position="0 0.9 0.001"
+                    material="color: #ff5500; shader: flat; opacity: 0.9"></a-plane>
+                <a-plane id="gal-title-txt" width="2.2" height="0.16" position="0 0.76 0.005"
+                    material="transparent: true; shader: flat" pointer-events="none"></a-plane>
+                <a-entity id="gallery-grid" position="0 0.2 0.01"></a-entity>
+                <a-plane id="gal-close-btn" class="ui-button" position="0 -0.76 0.01" width="0.5" height="0.15"
+                    material="color: #100202; opacity: 0.8; transparent: true; shader: flat">
+                    <a-plane width="0.5" height="0.002" position="0 0.073 0.001"
+                        material="color: #ff3300; shader: flat; opacity: 0.7"></a-plane>
+                    <a-plane id="gal-close-txt" width="0.4" height="0.10" position="0 0 0.005"
+                        material="transparent: true; shader: flat" pointer-events="none"></a-plane>
+                </a-plane>
+            </a-entity>
+        </a-entity>
+
+        <!-- HOTSPOT MODAL ANCHOR (Independent from Nav Menu) -->
+        <a-entity id="modal-anchor" position="0 0 0">
+            <!-- VR HOTSPOT MODAL (Premium Cinematic) -->
+            <a-entity id="vr-hotspot-modal" position="0 0.15 -1.4" visible="false">
+                <a-plane id="vr-hotspot-bg" class="raycast-blocker" width="1.6" height="1.0" material="color: #020202; opacity: 0.92; shader: flat; transparent: true; side: double; alphaTest: 0.1"></a-plane>
+                <a-plane width="1.6" height="0.004" position="0 0.498 0.001" material="color: #ff5500; shader: flat; opacity: 0.9"></a-plane>
+                <a-plane width="1.6" height="0.002" position="0 -0.498 0.001" material="color: #ff5500; shader: flat; opacity: 0.3"></a-plane>
+                
+                <a-plane id="modal-hs-title" position="0 0.35 0.01" width="1.4" height="0.20" material="transparent: true; shader: flat" pointer-events="none"></a-plane>
+                <a-plane id="modal-hs-desc" position="0 -0.05 0.01" width="1.4" height="0.50" material="transparent: true; shader: flat" pointer-events="none"></a-plane>
+                
+                <a-plane class="ui-button" id="modal-hs-close" position="0 -0.40 0.01" width="0.7" height="0.15" material="color: #100202; opacity: 0.8; shader: flat; transparent: true">
+                    <a-plane width="0.7" height="0.002" position="0 0.073 0.001" material="color: #ff3300; shader: flat; opacity: 0.7"></a-plane>
+                    <a-plane id="modal-hs-close-txt" width="0.5" height="0.10" position="0 0 0.004" material="transparent: true; shader: flat" pointer-events="none"></a-plane>
+                </a-plane>
+            </a-entity>
+        </a-entity>
+
+        <!-- HOTSPOT POOL V16 Crisp 2D Circles -->
+        <a-entity id="hotspot-pool">
+            <a-entity id="hs-1" class="hs-container" visible="false" position="0 -1000 0">
+                <a-plane class="hs-audio-tag" position="0 0.25 0" width="0.6" height="0.15" look-at="#player-cam" material="transparent: true; shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                <a-sphere class="hs-core" radius="0.055" position="0 0 0.002" material="color: #ff5500; shader: flat; transparent: true; opacity: 0.96; depthWrite: false"></a-sphere>
+                <a-circle class="hs-hitbox" radius="0.25" look-at="#player-cam" material="opacity: 0.0; transparent: true; depthWrite: false"></a-circle>
+                <a-ring class="hs-ring1" radius-inner="0.103" radius-outer="0.121" position="0 0 0.001" look-at="#player-cam" material="color: #ff5500; shader: flat; transparent: true; opacity: 0.58; depthWrite: false" animation="property: rotation; to: 0 0 360; dur: 4000; loop: true; easing: linear"></a-ring>
+            </a-entity>
+            <a-entity id="hs-2" class="hs-container" visible="false" position="0 -1000 0">
+                <a-plane class="hs-audio-tag" position="0 0.25 0" width="0.6" height="0.15" look-at="#player-cam" material="transparent: true; shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                <a-sphere class="hs-core" radius="0.055" position="0 0 0.002" material="color: #ff5500; shader: flat; transparent: true; opacity: 0.96; depthWrite: false" animation="property: scale; from: 1 1 1; to: 1.2 1.2 1.2; dir: alternate; dur: 1100; loop: true; easing: easeInOutSine"></a-sphere>
+                <a-circle class="hs-hitbox" radius="0.25" look-at="#player-cam" material="opacity: 0.0; transparent: true; depthWrite: false"></a-circle>
+                <a-ring class="hs-ring1" radius-inner="0.103" radius-outer="0.121" position="0 0 0.001" look-at="#player-cam" material="color: #ff5500; shader: flat; transparent: true; opacity: 0.58; depthWrite: false" animation="property: rotation; to: 0 0 360; dur: 4500; loop: true; easing: linear"></a-ring>
+            </a-entity>
+            <a-entity id="hs-3" class="hs-container" visible="false" position="0 -1000 0">
+                <a-plane class="hs-audio-tag" position="0 0.25 0" width="0.6" height="0.15" look-at="#player-cam" material="transparent: true; shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                <a-sphere class="hs-core" radius="0.055" position="0 0 0.002" material="color: #ff5500; shader: flat; transparent: true; opacity: 0.96; depthWrite: false" animation="property: scale; from: 1 1 1; to: 1.2 1.2 1.2; dir: alternate; dur: 1300; loop: true; easing: easeInOutSine"></a-sphere>
+                <a-circle class="hs-hitbox" radius="0.25" look-at="#player-cam" material="opacity: 0.0; transparent: true; depthWrite: false"></a-circle>
+                <a-ring class="hs-ring1" radius-inner="0.103" radius-outer="0.121" position="0 0 0.001" look-at="#player-cam" material="color: #ff5500; shader: flat; transparent: true; opacity: 0.58; depthWrite: false" animation="property: rotation; to: 0 0 360; dur: 5000; loop: true; easing: linear"></a-ring>
+            </a-entity>
+            <a-entity id="hs-4" class="hs-container" visible="false" position="0 -1000 0">
+                <a-plane class="hs-audio-tag" position="0 0.25 0" width="0.6" height="0.15" look-at="#player-cam" material="transparent: true; shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                <a-sphere class="hs-core" radius="0.055" position="0 0 0.002" material="color: #ff5500; shader: flat; transparent: true; opacity: 0.96; depthWrite: false" animation="property: scale; from: 1 1 1; to: 1.2 1.2 1.2; dir: alternate; dur: 1000; loop: true; easing: easeInOutSine"></a-sphere>
+                <a-circle class="hs-hitbox" radius="0.25" look-at="#player-cam" material="opacity: 0.0; transparent: true; depthWrite: false"></a-circle>
+                <a-ring class="hs-ring1" radius-inner="0.103" radius-outer="0.121" position="0 0 0.001" look-at="#player-cam" material="color: #ff5500; shader: flat; transparent: true; opacity: 0.58; depthWrite: false" animation="property: rotation; to: 0 0 360; dur: 3500; loop: true; easing: linear"></a-ring>
+            </a-entity>
+            <a-entity id="hs-5" class="hs-container" visible="false" position="0 -1000 0">
+                <a-plane class="hs-audio-tag" position="0 0.25 0" width="0.6" height="0.15" look-at="#player-cam" material="transparent: true; shader: flat; alphaTest: 0.5" visible="false"></a-plane>
+                <a-sphere class="hs-core" radius="0.055" position="0 0 0.002" material="color: #ff5500; shader: flat; transparent: true; opacity: 0.96; depthWrite: false" animation="property: scale; from: 1 1 1; to: 1.2 1.2 1.2; dir: alternate; dur: 1200; loop: true; easing: easeInOutSine"></a-sphere>
+                <a-circle class="hs-hitbox" radius="0.25" look-at="#player-cam" material="opacity: 0.0; transparent: true; depthWrite: false"></a-circle>
+                <a-ring class="hs-ring1" radius-inner="0.103" radius-outer="0.121" position="0 0 0.001" look-at="#player-cam" material="color: #ff5500; shader: flat; transparent: true; opacity: 0.58; depthWrite: false" animation="property: rotation; to: 0 0 360; dur: 4200; loop: true; easing: linear"></a-ring>
+            </a-entity>
+        </a-entity>
     </a-scene>
 
-    <script>
-        /**
-         * CHERNOBYL VR | ENGINE V2
-         * Centralized State Management & Robust Modular Architecture
-         */
-        const App = {
-            state: {
-                scenes: {},
-                currentScene: null,
-                isVR: false,
-                initialized: false
-            },
-
-            init() {
-                console.log("[Engine] Initializing Core...");
-                this.Discovery.run();
-                this.UI.bind();
-                
-                // Track VR Mode
-                document.querySelector('a-scene').addEventListener('enter-vr', () => {
-                    App.state.isVR = true;
-                    const gaze = document.getElementById('gaze-cursor');
-                    if (gaze) gaze.setAttribute('visible', 'true');
-                });
-                document.querySelector('a-scene').addEventListener('exit-vr', () => {
-                    App.state.isVR = false;
-                    const gaze = document.getElementById('gaze-cursor');
-                    if (gaze) gaze.setAttribute('visible', 'false');
-                });
-            },
-
-            async start() {
-                const btn = document.getElementById('btn-start');
-                btn.disabled = true;
-                btn.innerText = "ACCEDIENDO...";
-                
-                try {
-                    document.getElementById('launcher').classList.add('hidden');
-                    document.getElementById('ui-system').classList.add('visible');
-                    
-                    // Initial Scene Load
-                    await this.Scene.load("menu_principal.png");
-                    
-                    // Start Background Audio
-                    const ambient = document.getElementById('snd-ambient');
-                    ambient.play().catch(() => console.warn("Audio waiting for interaction."));
-                } catch (e) {
-                    console.error("Engine Start Fail:", e);
-                }
-            }
-        };
-
-        // ── SCENE MANAGER ────────────────────────────────────
-        App.Scene = {
-            async load(id) {
-                if (App.state.currentScene === id) return;
-                
-                const loader = document.getElementById('scene-loader');
-                loader.style.display = 'flex';
-                loader.classList.add('active');
-
-                // Update State
-                App.state.currentScene = id;
-                const sceneData = App.Discovery.get(id);
-
-                return new Promise(resolve => {
-                    const sky = document.getElementById('sky-display');
-                    
-                    // Cleanup Previous
-                    App.Hotspots.clear();
-                    App.VRMenu.clear();
-
-                    // Preload Image
-                    const img = new Image();
-                    img.onload = () => {
-                        sky.setAttribute('src', `Imagenes/${id}`);
-                        
-                        // Update 2D HUD
-                        document.getElementById('ui-scene-name').textContent = sceneData.title;
-                        
-                        // Highlight in List
-                        document.querySelectorAll('.scene-item').forEach(el => {
-                            el.classList.toggle('active', el.dataset.id === id);
-                        });
-
-                        // Rebuild 3D Layers
-                        App.Hotspots.spawn(id);
-                        App.VRMenu.build();
-
-                        // Smooth Fade Out
-                        setTimeout(() => {
-                            loader.classList.remove('active');
-                            setTimeout(() => {
-                                loader.style.display = 'none';
-                                resolve();
-                            }, 800);
-                        }, 500);
-                    };
-                    img.src = `Imagenes/${id}`;
-                });
-            }
-        };
-
-        // ── ASSET DISCOVERY ──────────────────────────────────
-        App.Discovery = {
-            registry: {
-                "menu_principal.png": { title: "Exterior Reactor 4", meta: "ZONA DE EXCLUSIÓN" },
-                "control_room_1.png": { title: "Sala de Control A", meta: "BLOQUE 1" },
-                "control_room_2.png": { title: "Sala de Control B", meta: "BLOQUE 2" },
-                "control_room_3.png": { title: "Sala de Control C", meta: "SITIO DE FALLA" },
-                "control_room_3_quemado.png": { title: "Reactor 4 (Colapso)", meta: "DÍA CERO" },
-                "control_room_4.png": { title: "Sala de Control D", meta: "PUNTO CRÍTICO" }
-            },
-
-            run() {
-                // Initialize with hardcoded registry first
-                Object.keys(this.registry).forEach(id => this.add(id));
-                
-                // Then try to probe in background
-                ["room_5.png", "exterior_1.jpg", "scene_2.webp"].forEach(id => this.probe(id));
-            },
-
-            add(id) {
-                if (App.state.scenes[id]) return;
-                const info = this.registry[id] || { title: this.clean(id), meta: "DESCUBIERTO" };
-                App.state.scenes[id] = { id, ...info };
-                this.renderUI();
-            },
-
-            async probe(id) {
-                const img = new Image();
-                img.onload = () => this.add(id);
-                img.src = `Imagenes/${id}`;
-            },
-
-            get(id) {
-                return App.state.scenes[id] || { title: "Sector Desconocido", meta: "INVESTIGACIÓN" };
-            },
-
-            clean(id) {
-                return id.split('.')[0].replace(/_/g, " ").toUpperCase();
-            },
-
-            renderUI() {
-                const list = document.getElementById('scene-list');
-                list.innerHTML = "";
-                Object.values(App.state.scenes).forEach(s => {
-                    const el = document.createElement('div');
-                    el.className = "scene-item" + (App.state.currentScene === s.id ? " active" : "");
-                    el.dataset.id = s.id;
-                    el.innerHTML = `
-                        <div class="scene-item-meta">${s.meta}</div>
-                        <div class="scene-item-name">${s.title}</div>
-                    `;
-                    el.onclick = () => App.Scene.load(s.id);
-                    list.appendChild(el);
-                });
-            }
-        };
-
-        // ── HOTSPOT SYSTEM ───────────────────────────────────
-        App.Hotspots = {
-            db: {
-                "menu_principal.png": [
-                    { pos: "-6 3 -12", title: "SARCÓFAGO", desc: "Contenedor original de 1986, diseñado para durar 30 años antes del Nuevo Confinamiento Seguro." },
-                    { pos: "12 5 -8", title: "NUEVO CONFINAMIENTO", desc: "La estructura móvil más grande del mundo, cubriendo los restos radiactivos del Bloque 4." }
-                ],
-                "control_room_3_quemado.png": [
-                    { pos: "0 1.2 -3.5", danger: true, title: "NÚCLEO EXPUESTO", desc: "Altísimos niveles de radiación gamma detectados en los restos de grafito y combustible." }
-                ]
-            },
-
-            clear() {
-                document.getElementById('hotspot-container').innerHTML = "";
-                document.getElementById('panel-container').innerHTML = "";
-            },
-
-            spawn(id) {
-                const root = document.getElementById('hotspot-container');
-                const items = this.db[id] || [{ pos: "3 1.5 -5", title: "ZONA EXPLORABLE", desc: "Este sector está bajo análisis técnico. Mantenga distancia de los restos metálicos." }];
-
-                items.forEach(h => {
-                    const el = document.createElement('a-entity');
-                    el.setAttribute('class', 'clickable');
-                    el.setAttribute('position', h.pos);
-                    el.setAttribute('look-at', '[camera]');
-                    
-                    el.innerHTML = `
-                        <a-circle radius="0.12" material="color: ${h.danger ? '#ff3300' : '#ff6600'}; opacity: 0.9; shader: flat"></a-circle>
-                        <a-ring radius-inner="0.13" radius-outer="0.16" material="color: white; opacity: 0.4; shader: flat"
-                            animation="property: scale; from: 1 1 1; to: 1.5 1.5 1.5; dur: 1500; loop: true; dir: alternate"></a-ring>
-                    `;
-
-                    el.addEventListener('click', () => this.showPanel(h));
-                    root.appendChild(el);
-                });
-            },
-
-            showPanel(h) {
-                const root = document.getElementById('panel-container');
-                root.innerHTML = "";
-                
-                const panel = document.createElement('a-entity');
-                panel.setAttribute('position', '0 1.6 -2.5');
-                panel.setAttribute('look-at', '[camera]');
-                
-                panel.innerHTML = `
-                    <a-plane width="3.2" height="1.6" material="color: #000; opacity: 0.96; shader: flat">
-                        <a-text value="${h.title}" align="center" width="4.5" position="0 0.5 0.02" color="#ff6600"></a-text>
-                        <a-text value="${h.desc}" align="center" width="3" position="0 -0.05 0.02" wrap-count="30"></a-text>
-                        <a-plane class="clickable" width="1" height="0.35" position="0 -0.55 0.05" material="color: #ff6600; shader: flat">
-                            <a-text value="CERRAR" align="center" width="3" position="0 0 0.01" color="#000"></a-text>
-                        </a-plane>
-                    </a-plane>
-                `;
-                
-                panel.querySelector('a-plane.clickable').addEventListener('click', () => {
-                    root.innerHTML = "";
-                    document.getElementById('snd-click').play();
-                });
-                
-                root.appendChild(panel);
-                document.getElementById('snd-click').play();
-            }
-        };
-
-        // ── VR HUD & NAVIGATION ─────────────────────────────
-        App.VRMenu = {
-            clear() { document.getElementById('vr-menu-root').innerHTML = ""; },
-
-            build() {
-                const root = document.getElementById('vr-menu-root');
-                const menu = document.createElement('a-entity');
-                menu.setAttribute('position', '0 0.6 -3');
-                menu.setAttribute('rotation', '-20 0 0');
-
-                // Cinematic UI Panel
-                menu.innerHTML = `
-                    <a-plane width="3" height="0.6" material="color: #111; opacity: 0.9; shader: flat; transparent: true">
-                        <a-ring radius-inner="1.5" radius-outer="1.51" scale="2 0.4 1" material="color: #ff6600; opacity: 0.2"></a-ring>
-                    </a-plane>
-                `;
-
-                const btnPrev = this.btn("< ANTERIOR", -1, () => this.nav(-1));
-                const btnHome = this.btn("VOLVER AL INICIO", 0, () => App.Scene.load("menu_principal.png"));
-                const btnNext = this.btn("SIGUIENTE >", 1, () => this.nav(1));
-
-                menu.appendChild(btnPrev);
-                menu.appendChild(btnHome);
-                menu.appendChild(btnNext);
-                root.appendChild(menu);
-            },
-
-            btn(label, x, cb) {
-                const el = document.createElement('a-entity');
-                el.setAttribute('position', `${x} 0 0.05`);
-                el.setAttribute('class', 'clickable');
-                el.innerHTML = `
-                    <a-plane width="0.8" height="0.4" material="color: #222; opacity: 0.6; shader: flat"></a-plane>
-                    <a-text value="${label}" align="center" width="2.5" position="0 0 0.01" shader="msdf"></a-text>
-                `;
-                el.addEventListener('mouseenter', () => el.querySelector('a-plane').setAttribute('material', 'color', '#ff6600'));
-                el.addEventListener('mouseleave', () => el.querySelector('a-plane').setAttribute('material', 'color', '#222'));
-                el.addEventListener('click', () => { cb(); document.getElementById('snd-click').play(); });
-                return el;
-            },
-
-            nav(dir) {
-                const scenes = Object.keys(App.state.scenes);
-                let idx = scenes.indexOf(App.state.currentScene) + dir;
-                if (idx < 0) idx = scenes.length - 1;
-                if (idx >= scenes.length) idx = 0;
-                App.Scene.load(scenes[idx]);
-            }
-        };
-
-        // ── UI BINDINGS ──────────────────────────────────────
-        App.UI = {
-            bind() {
-                document.getElementById('btn-start').onclick = () => App.start();
-                document.getElementById('ui-btn-menu').onclick = () => document.getElementById('drawer').classList.add('open');
-                document.getElementById('ui-close-drawer').onclick = () => document.getElementById('drawer').classList.remove('open');
-                document.getElementById('ui-btn-vr').onclick = () => document.querySelector('a-scene').enterVR();
-            }
-        };
-
-        // Initial Boot
-        window.addEventListener('DOMContentLoaded', () => App.init());
-    </script>
-</body>
-</html>
+    <script src="./engine.js"></script>
 </body>
 </html>

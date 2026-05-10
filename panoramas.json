@@ -1,0 +1,38 @@
+[
+    {
+        "id": "menu_principal.png",
+        "title": "EL SARCÓFAGO"
+    },
+    {
+        "id": "control_room_1.png",
+        "title": "SALA DE CONTROL 1"
+    },
+    {
+        "id": "control_room_2.png",
+        "title": "SALA DE CONTROL 2"
+    },
+    {
+        "id": "control_room_3.png",
+        "title": "SALA DE CONTROL 3"
+    },
+    {
+        "id": "control_room_3_quemado.png",
+        "title": "SALA DE CONTROL 3 (QUEMADO)"
+    },
+    {
+        "id": "control_room_4.png",
+        "title": "SALA DE CONTROL 4"
+    },
+    {
+        "id": "reactor_roof.png",
+        "title": "TECHO DEL REACTOR 4"
+    },
+    {
+        "id": "elephants_foot.png",
+        "title": "EL PIE DE ELEFANTE"
+    },
+    {
+        "id": "pripyat_ferris_wheel.png",
+        "title": "PARQUE DE PRIPYAT"
+    }
+]
