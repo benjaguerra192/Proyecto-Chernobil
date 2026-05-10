@@ -818,6 +818,10 @@ const UIState = {
 
 const UIManager = {
     _galleryCooldownUntil: 0,
+    _menuDragActive: false,
+    _menuDragUntil: 0,
+    _menuDragRaf: null,
+    _menuDragTimerInterval: null,
 
     _galleryCooldownActive() {
         return Date.now() < this._galleryCooldownUntil;
@@ -851,6 +855,66 @@ const UIManager = {
         Log.info('UI', 'Recentered UI to user gaze');
     },
 
+    startMenuDrag() {
+        if (!StateManager.vrActive || UIState.galleryVisible) return;
+        this._menuDragActive = true;
+        this._menuDragUntil = Date.now() + 5000;
+        const timerEl = document.getElementById('menu-drag-timer-txt');
+        if (timerEl) timerEl.setAttribute('visible', 'true');
+        this._setMenuDragTimer(5);
+
+        clearInterval(this._menuDragTimerInterval);
+        this._menuDragTimerInterval = setInterval(() => {
+            const left = Math.max(0, (this._menuDragUntil - Date.now()) / 1000);
+            this._setMenuDragTimer(left);
+            if (left <= 0) this.stopMenuDrag();
+        }, 200);
+
+        this._updateMenuDrag();
+        Log.info('UI', 'Menu drag started');
+    },
+
+    stopMenuDrag() {
+        this._menuDragActive = false;
+        clearInterval(this._menuDragTimerInterval);
+        this._menuDragTimerInterval = null;
+        if (this._menuDragRaf) cancelAnimationFrame(this._menuDragRaf);
+        this._menuDragRaf = null;
+        this._setMenuDragTimer(0);
+        setTimeout(() => {
+            if (!this._menuDragActive) document.getElementById('menu-drag-timer-txt')?.setAttribute('visible', 'false');
+        }, 800);
+        Log.info('UI', 'Menu drag locked');
+    },
+
+    _updateMenuDrag() {
+        if (!this._menuDragActive) return;
+        if (Date.now() >= this._menuDragUntil) {
+            this.stopMenuDrag();
+            return;
+        }
+        const cam = document.getElementById('player-cam');
+        const anchor = document.getElementById('ui-anchor');
+        if (cam && anchor && cam.object3D) {
+            const euler = new THREE.Euler().setFromQuaternion(cam.object3D.getWorldQuaternion(new THREE.Quaternion()), 'YXZ');
+            const pitch = THREE.MathUtils.clamp((euler.x * 180) / Math.PI, -35, 30);
+            const yaw = (euler.y * 180) / Math.PI;
+            anchor.setAttribute('rotation', `${pitch} ${yaw} 0`);
+        }
+        this._menuDragRaf = requestAnimationFrame(() => this._updateMenuDrag());
+    },
+
+    _setMenuDragTimer(secondsLeft) {
+        const el = document.getElementById('menu-drag-timer-txt');
+        if (!el) return;
+        const label = secondsLeft > 0 ? `MOVER ${secondsLeft.toFixed(1)}s` : 'FIJO';
+        const tex = CanvasRenderer.generate(label, {
+            w: 900, h: 150, size: '70px', color: '#ff8844',
+            family: '"JetBrains Mono", monospace', weight: '700', glow: 8
+        });
+        el.setAttribute('material', `src: url(${tex}); transparent: true; shader: flat; alphaTest: 0.5`);
+    },
+
     showMenu() {
         if (!StateManager.vrActive) {
             this.hideMenu();
@@ -863,12 +927,14 @@ const UIManager = {
         document.getElementById('vr-menu').setAttribute('visible', 'true');
         document.querySelectorAll('#vr-menu .ui-button:not(#menu-close)').forEach(el => el.classList.add('interactable'));
         document.getElementById('menu-close')?.classList.remove('interactable');
+        document.getElementById('menu-drag-timer-txt')?.setAttribute('visible', 'false');
         UIState.menuVisible = true;
         Log.info('UI', 'Menu shown');
         InputManager.refreshCursor();
     },
 
     hideMenu() {
+        this.stopMenuDrag();
         document.getElementById('vr-menu').setAttribute('visible', 'false');
         document.querySelectorAll('#vr-menu .ui-button').forEach(el => el.classList.remove('interactable'));
         UIState.menuVisible = false;
@@ -1143,15 +1209,21 @@ const InputManager = {
             dot.setAttribute('scale', '1.5 1.5 1.5');
         }
         if (ring) {
-            ring.setAttribute('animation__fuse', 'property: scale; from: 1 1 1; to: 0.2 0.2 0.2; dur: 1500; easing: linear');
+            const fuseMs = this._getFuseDuration(target);
+            ring.setAttribute('animation__fuse', `property: scale; from: 1 1 1; to: 0.2 0.2 0.2; dur: ${fuseMs}; easing: linear`);
         }
         
+        const fuseMs = this._getFuseDuration(target);
         this._fuseTimer = setTimeout(() => {
             if (!StateManager.transitioning && this._active) {
                 this._triggerClick(target);
             }
             this._cancelFuse();
-        }, 1500);
+        }, fuseMs);
+    },
+
+    _getFuseDuration(target) {
+        return target && target.closest && target.closest('#menu-drag-handle') ? 3000 : 1500;
     },
 
     _cancelFuse() {
@@ -1178,6 +1250,13 @@ const InputManager = {
         Log.info('INPUT', `_triggerClick on: ${target.id || target.className}`);
         
         const id = target.id;
+
+        const dragHandle = target.closest ? target.closest('#menu-drag-handle') : null;
+        if (dragHandle) {
+            UIManager.startMenuDrag();
+            Log.info('INPUT', 'Menu drag handle activated');
+            return;
+        }
 
         // Tooltip close buttons
         const closeBtn = target.closest ? target.closest('#modal-hs-close') : null;

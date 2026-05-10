@@ -349,6 +349,19 @@
             <!-- VR NAV BAR (Minimalist Glassmorphism) -->
             <a-entity id="vr-menu" position="0 -0.5 -1.6" visible="false">
                 <a-entity rotation="-15 0 0">
+                    <!-- DRAG HANDLE -->
+                    <a-plane class="ui-button" id="menu-drag-handle" width="0.56" height="0.18" position="0 0.28 0.006"
+                        material="color: #050607; opacity: 0.08; transparent: true; shader: flat">
+                        <a-circle radius="0.028" position="-0.11 0 0.004"
+                            material="color: #ff8844; shader: flat; opacity: 0.95"></a-circle>
+                        <a-circle radius="0.028" position="0 0 0.004"
+                            material="color: #ff8844; shader: flat; opacity: 0.95"></a-circle>
+                        <a-circle radius="0.028" position="0.11 0 0.004"
+                            material="color: #ff8844; shader: flat; opacity: 0.95"></a-circle>
+                    </a-plane>
+                    <a-plane id="menu-drag-timer-txt" width="0.72" height="0.10" position="0 0.42 0.008"
+                        material="transparent: true; shader: flat; alphaTest: 0.5" visible="false" pointer-events="none"></a-plane>
+
                     <!-- Premium Glass Background -->
                     <a-plane id="vr-menu-bg" class="raycast-blocker" width="2.2" height="0.22"
                         material="color: #020202; opacity: 0.85; transparent: true; shader: flat; side: double; alphaTest: 0.1"></a-plane>
