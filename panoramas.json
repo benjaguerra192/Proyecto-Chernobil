@@ -1,7 +1,7 @@
 [
     {
         "id": "menu_principal.png",
-        "title": "EL SARCÓFAGO"
+        "title": "EL SARC?FAGO"
     },
     {
         "id": "control_room_1.png",
@@ -22,6 +22,14 @@
     {
         "id": "control_room_4.png",
         "title": "SALA DE CONTROL 4"
+    },
+    {
+        "id": "reactor_control_rods_zone.png",
+        "title": "ZONA DE BARRAS DE CONTROL"
+    },
+    {
+        "id": "reactor_explosion_moment.png",
+        "title": "MOMENTO DE LA EXPLOSI?N"
     },
     {
         "id": "reactor_roof.png",
