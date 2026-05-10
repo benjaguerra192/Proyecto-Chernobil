@@ -71,19 +71,21 @@ const AudioManager = {
     _ambient: null,
     _voice: null,
     _currentTrack: null,
-    _fadeInterval: null,
+    _currentVoice: null,
+    _lastVoiceStart: 0,
+    _fadeIntervals: new WeakMap(),
     
     // Scene to audio mapping
     _tracks: {
         'menu_principal.png':         './Audios/menu_principal.mp3',
         'control_room_1.png':         './Audios/control-rooms.mp3',
         'control_room_2.png':         './Audios/panic.mp3',
-        'control_room_3.png':         './Audios/desolado.mp3',
-        'control_room_3_quemado.png': './Audios/desolado.mp3',
-        'control_room_4.png':         './Audios/desolado.mp3',
-        'reactor_roof.png':           './Audios/desolado.mp3',
-        'elephants_foot.png':         './Audios/desolado.mp3',
-        'pripyat_ferris_wheel.png':   './Audios/desolado.mp3'
+        'control_room_3.png':         './Audios/control-rooms.mp3',
+        'control_room_3_quemado.png': './Audios/radiation.mp3',
+        'control_room_4.png':         './Audios/radiation.mp3',
+        'reactor_roof.png':           './Audios/radiation.mp3',
+        'elephants_foot.png':         './Audios/radiation.mp3',
+        'pripyat_ferris_wheel.png':   './Audios/radiation.mp3'
     },
 
     init() {
@@ -103,6 +105,7 @@ const AudioManager = {
         this._voice.loop = false;
         
         this._voice.addEventListener('ended', () => {
+            this._currentVoice = null;
             this.fadeVolume(this._ambient, 0.25, 1000);
         });
 
@@ -149,15 +152,25 @@ const AudioManager = {
 
     playVoice(voiceId) {
         if (!this._ready) return;
+        const now = Date.now();
+        if (this._currentVoice === voiceId && this._voice && !this._voice.paused) return;
+        if (now - this._lastVoiceStart < 350) return;
+        this._lastVoiceStart = now;
+        this._currentVoice = voiceId;
         
         // Lower ambient volume
         if (!this._ambient.paused) {
             this.fadeVolume(this._ambient, 0.08, 500);
         }
         
+        if (this._voice && !this._voice.paused) {
+            this._voice.pause();
+            this._voice.currentTime = 0;
+        }
         this._voice.src = `./Audios/${voiceId}.mp3`;
         this._voice.volume = 1.0;
         this._voice.play().catch(e => {
+            this._currentVoice = null;
             Log.warn('AUDIO', 'Voice autoplay blocked');
             this.fadeVolume(this._ambient, 0.25, 500);
         });
@@ -165,6 +178,7 @@ const AudioManager = {
     },
 
     stopVoice() {
+        this._currentVoice = null;
         if (!this._voice || this._voice.paused) return;
         this._voice.pause();
         this._voice.currentTime = 0;
@@ -174,25 +188,31 @@ const AudioManager = {
 
     fadeVolume(audioObj, targetVolume, duration) {
         return new Promise((resolve) => {
+            if (!audioObj) {
+                resolve();
+                return;
+            }
             const startVol = audioObj.volume;
             const change = targetVolume - startVol;
             const steps = 20;
             const stepTime = duration / steps;
             let currentStep = 0;
             
-            clearInterval(this._fadeInterval);
+            clearInterval(this._fadeIntervals.get(audioObj));
             
-            this._fadeInterval = setInterval(() => {
+            const fadeInterval = setInterval(() => {
                 currentStep++;
                 let newVol = startVol + (change * (currentStep / steps));
                 audioObj.volume = Math.max(0, Math.min(1, newVol));
                 
                 if (currentStep >= steps) {
-                    clearInterval(this._fadeInterval);
+                    clearInterval(fadeInterval);
+                    this._fadeIntervals.delete(audioObj);
                     audioObj.volume = targetVolume;
                     resolve();
                 }
             }, stepTime);
+            this._fadeIntervals.set(audioObj, fadeInterval);
         });
     },
 
@@ -407,11 +427,15 @@ const HotspotManager = {
             
             _lastFire = now;
             Log.info('HOTSPOT', 'Click detected');
-            AudioManager.click();
             const type = hsRoot.getAttribute('data-type');
-            if (type === 'scene') {
+            if (type === 'audio') {
+                const trackId = hsRoot.getAttribute('data-target');
+                if (trackId) AudioManager.playVoice(trackId);
+            } else if (type === 'scene') {
+                AudioManager.click();
                 SceneManager.load(hsRoot.getAttribute('data-target'));
             } else {
+                AudioManager.click();
                 this.openTooltip(hsRoot);
             }
         });
@@ -443,6 +467,11 @@ const HotspotManager = {
     },
 
     openTooltip(hsRoot) {
+        if (hsRoot.getAttribute('data-type') === 'audio') {
+            const trackId = hsRoot.getAttribute('data-target');
+            if (trackId) AudioManager.playVoice(trackId);
+            return;
+        }
         if (this._activeTooltip && this._activeTooltip !== hsRoot) {
             this.closeTooltip();
         }
@@ -463,6 +492,9 @@ const HotspotManager = {
         if (cam && modalAnchor) {
             const euler = new THREE.Euler().setFromQuaternion(cam.object3D.getWorldQuaternion(new THREE.Quaternion()), 'YXZ');
             modalAnchor.setAttribute('rotation', `0 ${(euler.y * 180) / Math.PI} 0`);
+            const hotspotWorldPos = new THREE.Vector3();
+            hsRoot.object3D.getWorldPosition(hotspotWorldPos);
+            modalAnchor.setAttribute('position', `0 ${hotspotWorldPos.y} 0`);
         }
 
         // Setup centralized modal
@@ -511,6 +543,8 @@ const HotspotManager = {
     clear() {
         Log.info('HOTSPOT', 'Clearing all hotspots');
         this.closeTooltip();
+        AudioManager.stopVoice();
+        if (typeof InputManager !== 'undefined' && InputManager.clearAudioHover) InputManager.clearAudioHover();
         for (let i = 1; i <= this.POOL_SIZE; i++) {
             const root = document.getElementById('hs-' + i);
             if (root) {
@@ -712,6 +746,9 @@ const SceneManager = {
         Log.info('SCENE', `Loading: ${sceneId}`);
 
         await TransitionManager.run(async () => {
+            AudioManager.stopVoice();
+            if (typeof InputManager !== 'undefined' && InputManager.clearAudioHover) InputManager.clearAudioHover();
+
             // 1. Close any open modals (without losing menu)
             UIManager.closeAllModals({ keepMenu: true });
 
@@ -754,6 +791,7 @@ const SceneManager = {
 
             // 8. Sync eye level
             UIManager.syncEyeLevel();
+            if (StateManager.vrActive) UIManager.showMenu();
         });
 
         Log.ok('SCENE', `Ready: ${sceneId}`);
@@ -823,7 +861,8 @@ const UIManager = {
         
         this.recenterUI();
         document.getElementById('vr-menu').setAttribute('visible', 'true');
-        document.querySelectorAll('#vr-menu .ui-button').forEach(el => el.classList.add('interactable'));
+        document.querySelectorAll('#vr-menu .ui-button:not(#menu-close)').forEach(el => el.classList.add('interactable'));
+        document.getElementById('menu-close')?.classList.remove('interactable');
         UIState.menuVisible = true;
         Log.info('UI', 'Menu shown');
         InputManager.refreshCursor();
@@ -862,9 +901,9 @@ const UIManager = {
         }
     },
 
-    closeGallery() {
-        if (this._galleryCooldownActive()) return;
-        this._armGalleryCooldown();
+    closeGallery(opts = {}) {
+        if (!opts.force && this._galleryCooldownActive()) return;
+        if (!opts.force) this._armGalleryCooldown();
         Log.info('UI', 'Closing gallery');
         try {
             const gal = document.getElementById('vr-gallery');
@@ -1038,6 +1077,7 @@ const InputManager = {
     _fuseTarget: null,
     _active: true,
     _audioHoverRoot: null,
+    _audioClearTimer: null,
 
     init() {
         this._bindHUDButtons();
@@ -1151,11 +1191,15 @@ const InputManager = {
         // Hotspot sphere/hitbox clicks -> open tooltip
         const hsRoot = target.closest ? target.closest('.hs-container') : null;
         if (hsRoot && hsRoot.classList.contains('active-hs')) {
-            AudioManager.click();
             const type = hsRoot.getAttribute('data-type');
-            if (type === 'scene') {
+            if (type === 'audio') {
+                const trackId = hsRoot.getAttribute('data-target');
+                if (trackId) AudioManager.playVoice(trackId);
+            } else if (type === 'scene') {
+                AudioManager.click();
                 SceneManager.load(hsRoot.getAttribute('data-target'));
             } else {
+                AudioManager.click();
                 HotspotManager.openTooltip(hsRoot);
             }
             Log.info('INPUT', `Hotspot activated: ${hsRoot.id}`);
@@ -1166,7 +1210,7 @@ const InputManager = {
         if (id === 'menu-prev') { AudioManager.click(); SceneManager.navigate(-1); }
         else if (id === 'menu-next') { AudioManager.click(); SceneManager.navigate(1); }
         else if (id === 'menu-gallery') { AudioManager.click(); UIManager.showGallery(); }
-        else if (id === 'menu-close') { AudioManager.click(); UIManager.hideMenu(); }
+        else if (id === 'menu-close') { return; }
         else if (id === 'gal-close-btn') { AudioManager.click(); UIManager.closeGallery(); }
         else if (target.classList && target.classList.contains('gal-thumb')) {
             const gal = document.getElementById('vr-gallery');
@@ -1174,7 +1218,7 @@ const InputManager = {
             const sceneId = target.getAttribute('data-scene-id');
             if (sceneId && !StateManager.transitioning) {
                 AudioManager.click();
-                UIManager.closeGallery();
+                UIManager.closeGallery({ force: true });
                 SceneManager.load(sceneId);
             }
         }
@@ -1227,6 +1271,10 @@ const InputManager = {
         const hsRoot = target.closest ? target.closest('.hs-container') : null;
         if (!hsRoot || !hsRoot.classList.contains('active-hs')) return;
         if (hsRoot.getAttribute('data-type') !== 'audio') return;
+        if (this._audioClearTimer) {
+            clearTimeout(this._audioClearTimer);
+            this._audioClearTimer = null;
+        }
         if (this._audioHoverRoot === hsRoot) return;
 
         if (this._audioHoverRoot) {
@@ -1243,9 +1291,25 @@ const InputManager = {
         if (!this._audioHoverRoot) return;
         const clearedRoot = target && target.closest ? target.closest('.hs-container') : null;
         if (clearedRoot && clearedRoot !== this._audioHoverRoot) return;
-        HotspotManager._paint(this._audioHoverRoot, false);
+        if (this._audioClearTimer) clearTimeout(this._audioClearTimer);
+        this._audioClearTimer = setTimeout(() => {
+            if (!this._audioHoverRoot) return;
+            HotspotManager._paint(this._audioHoverRoot, false);
+            this._audioHoverRoot = null;
+            this._audioClearTimer = null;
+            if (!UIState.hotspotModalOpen) AudioManager.stopVoice();
+        }, 220);
+    },
+
+    clearAudioHover() {
+        if (this._audioClearTimer) {
+            clearTimeout(this._audioClearTimer);
+            this._audioClearTimer = null;
+        }
+        if (this._audioHoverRoot) {
+            HotspotManager._paint(this._audioHoverRoot, false);
+        }
         this._audioHoverRoot = null;
-        if (!UIState.hotspotModalOpen) AudioManager.stopVoice();
     }
 };
 
