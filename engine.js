@@ -29,7 +29,7 @@ const Log = {
 };
 
 // ============================================================
-// STATE MANAGER â€” single source of truth
+// STATE MANAGER - single source of truth
 // ============================================================
 const StateManager = {
     panoramas: [],
@@ -42,7 +42,7 @@ const StateManager = {
     set(key, val) {
         const prev = this[key];
         this[key] = val;
-        if (DEBUG && prev !== val) Log.info('STATE', `${key}: ${prev} â†’ ${val}`);
+        if (DEBUG && prev !== val) Log.info('STATE', `${key}: ${prev} -> ${val}`);
         window.dispatchEvent(new CustomEvent('stateChange', { detail: { key, val, prev } }));
     },
     lock()   { this.set('transitioning', true); },
@@ -50,7 +50,7 @@ const StateManager = {
 };
 
 // ============================================================
-// EVENT BUS â€” decoupled communication
+// EVENT BUS - decoupled communication
 // ============================================================
 const Bus = {
     emit(name, detail = {}) {
@@ -63,7 +63,7 @@ const Bus = {
 };
 
 // ============================================================
-// AUDIO MANAGER â€” Web Audio API & Ambient Tracks
+// AUDIO MANAGER - Web Audio API & Ambient Tracks
 // ============================================================
 const AudioManager = {
     _ready: false,
@@ -204,7 +204,7 @@ const AudioManager = {
 };
 
 // ============================================================
-// CANVAS RENDERER â€” generates texture data URLs
+// CANVAS RENDERER - generates texture data URLs
 // ============================================================
 const CanvasRenderer = {
     generate(text, opts = {}) {
@@ -289,7 +289,7 @@ const CanvasRenderer = {
 };
 
 // ============================================================
-// SCENE CONFIG â€” per-scene camera/render tuning
+// SCENE CONFIG - per-scene camera/render tuning
 // ============================================================
 const SceneConfig = {
     'menu_principal.png':          { fov: 75 },
@@ -304,12 +304,12 @@ const SceneConfig = {
 };
 
 // ============================================================
-// HOTSPOT DATABASE â€” compositionally placed per scene
+// HOTSPOT DATABASE - compositionally placed per scene
 // ============================================================
 const HotspotDB = {
     'menu_principal.png': [
-        { type: 'info', pos: '0 0.3 -3', title: 'SARCÃ“FAGO', desc: 'Estructura de contenciÃ³n construida en 206 dÃ­as por 600.000 trabajadores.' },
-        { type: 'info', pos: '-3 -0.2 -1', title: 'ZONA DE EXCLUSIÃ“N', desc: 'Ãrea de 30 km de radio. Evacuada permanentemente.' },
+        { type: 'info', pos: '0 0.3 -3', title: 'SARC\u00d3FAGO', desc: 'Estructura de contenci\u00f3n construida en 206 d\u00edas por 600.000 trabajadores.' },
+        { type: 'info', pos: '-3 -0.2 -1', title: 'ZONA DE EXCLUSI\u00d3N', desc: '\u00c1rea de 30 km de radio. Evacuada permanentemente.' },
     ],
     'control_room_1.png': [
         { type: 'audio', target: 'trabajador_1', pos: '-1.5 0.1 -3', title: 'CONSOLA AZ-5', desc: 'Boton de parada de emergencia. Al presionarlo a la 1:23 AM se inicio la reaccion en cadena.' },
@@ -352,14 +352,14 @@ const HotspotDB = {
 };
 
 // ============================================================
-// SCENE DATABASE â€” Scene specific metadata
+// SCENE DATABASE - Scene specific metadata
 // ============================================================
 const SceneDB = {
-    'menu_principal.png':          { title: 'EL SARCÃ“FAGO',               desc: 'Vista exterior del reactor 4 cubierto por el sarcÃ³fago de hormigÃ³n construido en 206 dÃ­as.' },
+    'menu_principal.png':          { title: 'EL SARC\u00d3FAGO',               desc: 'Vista exterior del reactor 4 cubierto por el sarc\u00f3fago de hormig\u00f3n construido en 206 d\u00edas.' },
     'control_room_1.png':          { title: 'SALA DE CONTROL 4',          desc: 'Epicentro del desastre. El fatal ensayo de seguridad ocurrio aqui a la 01:23 AM.' },
     'control_room_2.png':          { title: 'PANELES DE SEGURIDAD',       desc: 'Sistemas de refrigeracion manuales. Todos los sistemas automaticos fueron desactivados.' },
     'control_room_3.png':          { title: 'SALA DE CONTROL 3',          desc: 'Centro de operaciones adyacente. Los operadores evacuaron minutos despues de la explosion.' },
-    'control_room_3_quemado.png':  { title: 'SALA DE CONTROL 3 (DAÃ‘O)',   desc: 'Misma sala tras el incendio. Las paredes muestran marcas de radiacion extrema.' },
+    'control_room_3_quemado.png':  { title: 'SALA DE CONTROL 3 (DA\u00d1O)',   desc: 'Misma sala tras el incendio. Las paredes muestran marcas de radiacion extrema.' },
     'control_room_4.png':          { title: 'ZONA DESTRUIDA',             desc: 'Restos del reactor tras la explosion termica que volo la tapa de 1000 toneladas.' },
     'reactor_roof.png':            { title: 'TECHO DEL REACTOR',          desc: 'El nivel mas letal. Los liquidadores trabajaron aqui recogiendo grafito altamente radiactivo.' },
     'elephants_foot.png':          { title: 'PIE DE ELEFANTE',            desc: 'Masa fundida de corium extremadamente radiactiva en el sotano del reactor.' },
@@ -367,7 +367,7 @@ const SceneDB = {
 };
 
 // ============================================================
-// HOTSPOT MANAGER â€” isolated lifecycle
+// HOTSPOT MANAGER - isolated lifecycle
 // ============================================================
 const HotspotManager = {
     POOL_SIZE: 5,
@@ -554,7 +554,7 @@ const HotspotManager = {
                 root.setAttribute('data-tex-desc', `src: url(${dImg}); transparent: true; shader: flat`);
             }
 
-            // Position â€” use radius 1.5 so hotspots are close enough to read comfortably
+            // Position - use radius 1.5 so hotspots are close enough to read comfortably
             const pos = this._normalizePos(pt.pos, 1.5);
             root.setAttribute('position', pos);
             root.setAttribute('visible', 'true');
@@ -612,7 +612,7 @@ const HotspotManager = {
 };
 
 // ============================================================
-// TRANSITION MANAGER â€” blackout + loader
+// TRANSITION MANAGER - blackout + loader
 // ============================================================
 const TransitionManager = {
     _blackout: null,
@@ -626,7 +626,7 @@ const TransitionManager = {
 
     async run(fn) {
         if (StateManager.transitioning) {
-            Log.warn('TRANSITION', 'Already transitioning â€” ignored');
+            Log.warn('TRANSITION', 'Already transitioning - ignored');
             return;
         }
         StateManager.lock();
@@ -659,7 +659,7 @@ const TransitionManager = {
 };
 
 // ============================================================
-// PANORAMA MANAGER â€” ONLY swaps the sky texture
+// PANORAMA MANAGER - ONLY swaps the sky texture
 // ============================================================
 const PanoramaManager = {
     validate(imgElement) {
@@ -691,7 +691,7 @@ const PanoramaManager = {
 };
 
 // ============================================================
-// SCENE MANAGER â€” orchestrates transitions
+// SCENE MANAGER - orchestrates transitions
 // ============================================================
 const SceneManager = {
     panoramas: [],
@@ -703,7 +703,7 @@ const SceneManager = {
 
     async load(sceneId) {
         if (StateManager.transitioning) {
-            Log.warn('SCENE', `Blocked â€” already transitioning`);
+            Log.warn('SCENE', `Blocked - already transitioning`);
             return;
         }
         const scene = this.panoramas.find(p => p.id === sceneId);
@@ -731,12 +731,12 @@ const SceneManager = {
             const hSub = document.getElementById('hud-subtitle');
             const hDesc = document.getElementById('hud-desc');
             if (hTitle) hTitle.textContent = pInfo.title;
-            if (hSub) hSub.textContent = 'UBICACIÃ“N REGISTRADA';
+            if (hSub) hSub.textContent = 'UBICACI\u00d3N REGISTRADA';
             if (hDesc) hDesc.textContent = pInfo.desc;
             
             // Render Permanent VR Location Title (Cinematic glassmorphism glow)
             const vrTitle = CanvasRenderer.generate(pInfo.title, { w: 2048, h: 256, size: '140px', weight: '300', family: '"Inter", sans-serif', color: '#ffffff', align: 'left', glow: 20, glowColor: '#ff5500' });
-            const vrDesc  = CanvasRenderer.generate('UBICACIÃ“N REGISTRADA', { w: 2048, h: 128, size: '70px', weight: '700', family: '"JetBrains Mono", monospace', color: '#ff5500', align: 'left', glow: 5 });
+            const vrDesc  = CanvasRenderer.generate('UBICACI\u00d3N REGISTRADA', { w: 2048, h: 128, size: '70px', weight: '700', family: '"JetBrains Mono", monospace', color: '#ff5500', align: 'left', glow: 5 });
             const tEl = document.getElementById('vr-title-txt');
             const dEl = document.getElementById('vr-subtitle-txt');
             if (tEl) tEl.setAttribute('material', `src: url(${vrTitle}); transparent: true; shader: flat; alphaTest: 0.5`);
@@ -764,7 +764,7 @@ const SceneManager = {
         if (StateManager.transitioning) return;
         const idx = this.panoramas.findIndex(p => p.id === StateManager.currentId);
         const next = (idx + dir + this.panoramas.length) % this.panoramas.length;
-        Log.info('SCENE', `Navigate ${dir > 0 ? 'NEXT' : 'PREV'} â†’ ${this.panoramas[next].id}`);
+        Log.info('SCENE', `Navigate ${dir > 0 ? 'NEXT' : 'PREV'} -> ${this.panoramas[next].id}`);
         this.load(this.panoramas[next].id);
     },
 };
@@ -1012,7 +1012,7 @@ const UIManager = {
         
         // Nav bar buttons (Premium styling)
         set('menu-prev-txt',  t('< ANT', 600, 200, '90px', '#dddddd', 5));
-        set('menu-gal-txt',   t('GALERÃA', 1000, 200, '100px', '#ff8844', 10));
+        set('menu-gal-txt',   t('GALER\u00cdA', 1000, 200, '100px', '#ff8844', 10));
         set('menu-next-txt',  t('SIG >', 600, 200, '90px', '#dddddd', 5));
         set('menu-close-txt', t('X', 400, 200, '100px', '#ff4422', 10));
         
@@ -1031,7 +1031,7 @@ const UIManager = {
 };
 
 // ============================================================
-// INPUT MANAGER â€” V12 Central Raycaster Engine
+// INPUT MANAGER - V12 Central Raycaster Engine
 // ============================================================
 const InputManager = {
     _fuseTimer: null,
@@ -1250,7 +1250,7 @@ const InputManager = {
 };
 
 // ============================================================
-// APP â€” bootstrap
+// APP - bootstrap
 // ============================================================
 const App = {
     async init() {
@@ -1298,9 +1298,9 @@ const App = {
     },
 
     _enableLaunch() {
-        Log.ok('APP', 'Assets ready â€” enabling launch');
+        Log.ok('APP', 'Assets ready - enabling launch');
         const btn = document.getElementById('btn-start');
-        btn.textContent = 'INICIAR SIMULACIÃ“N';
+        btn.textContent = 'INICIAR SIMULACI\u00d3N';
         btn.disabled = false;
         btn.addEventListener('click', () => this._launch());
     },
