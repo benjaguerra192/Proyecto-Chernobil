@@ -352,13 +352,13 @@
             <a-entity id="vr-menu" position="0 -0.5 -1.6" visible="false">
                 <a-entity rotation="-15 0 0">
                     <!-- DRAG HANDLE -->
-                    <a-plane class="ui-button" id="menu-drag-handle" width="0.56" height="0.18" position="0 0.28 0.006"
-                        material="color: #050607; opacity: 0.08; transparent: true; shader: flat">
-                        <a-circle radius="0.028" position="-0.11 0 0.004"
+                    <a-plane id="menu-drag-handle" width="0.56" height="0.18" position="0 0.28 0.006"
+                        material="color: #050607; opacity: 0; transparent: true; shader: flat; depthWrite: false">
+                        <a-circle class="drag-dot" radius="0.028" position="-0.11 0 0.004"
                             material="color: #ff8844; shader: flat; opacity: 0.95"></a-circle>
-                        <a-circle radius="0.028" position="0 0 0.004"
+                        <a-circle class="drag-dot" radius="0.028" position="0 0 0.004"
                             material="color: #ff8844; shader: flat; opacity: 0.95"></a-circle>
-                        <a-circle radius="0.028" position="0.11 0 0.004"
+                        <a-circle class="drag-dot" radius="0.028" position="0.11 0 0.004"
                             material="color: #ff8844; shader: flat; opacity: 0.95"></a-circle>
                     </a-plane>
                     <a-plane id="menu-drag-timer-txt" width="0.72" height="0.10" position="0 0.42 0.008"
@@ -413,6 +413,18 @@
                 <a-plane id="gal-title-txt" width="2.2" height="0.16" position="0 0.76 0.005"
                     material="transparent: true; shader: flat" pointer-events="none"></a-plane>
                 <a-entity id="gallery-grid" position="0 0.2 0.01"></a-entity>
+                <a-plane id="gal-prev-page" class="ui-button" position="-0.55 -0.58 0.01" width="0.42" height="0.15"
+                    material="color: #080808; opacity: 0.75; transparent: true; shader: flat">
+                    <a-plane id="gal-prev-page-txt" width="0.34" height="0.10" position="0 0 0.005"
+                        material="transparent: true; shader: flat" pointer-events="none"></a-plane>
+                </a-plane>
+                <a-plane id="gal-page-txt" width="0.52" height="0.10" position="0 -0.58 0.012"
+                    material="transparent: true; shader: flat" pointer-events="none"></a-plane>
+                <a-plane id="gal-next-page" class="ui-button" position="0.55 -0.58 0.01" width="0.42" height="0.15"
+                    material="color: #080808; opacity: 0.75; transparent: true; shader: flat">
+                    <a-plane id="gal-next-page-txt" width="0.34" height="0.10" position="0 0 0.005"
+                        material="transparent: true; shader: flat" pointer-events="none"></a-plane>
+                </a-plane>
                 <a-plane id="gal-close-btn" class="ui-button" position="0 -0.76 0.01" width="0.5" height="0.15"
                     material="color: #100202; opacity: 0.8; transparent: true; shader: flat">
                     <a-plane width="0.5" height="0.002" position="0 0.073 0.001"

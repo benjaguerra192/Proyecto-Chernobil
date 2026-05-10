@@ -423,6 +423,7 @@ const SceneDB = {
 const HotspotManager = {
     POOL_SIZE: 5,
     _activeTooltip: null,
+    _textureCache: new Map(),
     COLORS: {
         info: {
             base: '#ff5500',
@@ -592,7 +593,7 @@ const HotspotManager = {
     },
 
     load(sceneId) {
-        const pts = HotspotDB[sceneId] || [];
+        const pts = (HotspotDB[sceneId] || []).filter(pt => pt.type !== 'scene');
         Log.info('HOTSPOT', `Loading ${pts.length} hotspot(s) for ${sceneId}`);
 
         pts.forEach((pt, idx) => {
@@ -613,10 +614,9 @@ const HotspotManager = {
             }
 
             if (pt.type !== 'scene') {
-                const tImg = CanvasRenderer.generate(pt.title || '', { w: 2048, h: 300, size: '140px', color: '#ff5500' });
-                const dImg = CanvasRenderer.generate(pt.desc || '',  { w: 2048, h: 800, size: '90px', color: '#dddddd', wrap: true });
-                root.setAttribute('data-tex-title', `src: url(${tImg}); transparent: true; shader: flat`);
-                root.setAttribute('data-tex-desc', `src: url(${dImg}); transparent: true; shader: flat`);
+                const tex = this._getTextTextures(pt);
+                root.setAttribute('data-tex-title', tex.title);
+                root.setAttribute('data-tex-desc', tex.desc);
             }
 
             // Keep hotspots behind VR panels so menus always win the raycast.
@@ -661,6 +661,19 @@ const HotspotManager = {
         const p = posStr.split(' ').map(Number);
         const mag = Math.sqrt(p[0] ** 2 + p[1] ** 2 + p[2] ** 2) || 1;
         return `${(p[0] / mag) * radius} ${(p[1] / mag) * radius} ${(p[2] / mag) * radius}`;
+    },
+
+    _getTextTextures(pt) {
+        const key = `${pt.title || ''}\n${pt.desc || ''}`;
+        if (this._textureCache.has(key)) return this._textureCache.get(key);
+        const tImg = CanvasRenderer.generate(pt.title || '', { w: 2048, h: 300, size: '140px', color: '#ff5500' });
+        const dImg = CanvasRenderer.generate(pt.desc || '',  { w: 2048, h: 800, size: '90px', color: '#dddddd', wrap: true });
+        const tex = {
+            title: `src: url(${tImg}); transparent: true; shader: flat`,
+            desc: `src: url(${dImg}); transparent: true; shader: flat`
+        };
+        this._textureCache.set(key, tex);
+        return tex;
     },
 
     _paint(root, hovered) {
@@ -771,6 +784,10 @@ const SceneManager = {
             Log.warn('SCENE', `Blocked - already transitioning`);
             return;
         }
+        if (StateManager.currentId === sceneId) {
+            Log.info('SCENE', `Already on ${sceneId}`);
+            return;
+        }
         const scene = this.panoramas.find(p => p.id === sceneId);
         if (!scene) { Log.error('SCENE', `Not found: ${sceneId}`); return; }
 
@@ -803,12 +820,11 @@ const SceneManager = {
             if (hDesc) hDesc.textContent = pInfo.desc;
             
             // Render Permanent VR Location Title (Cinematic glassmorphism glow)
-            const vrTitle = CanvasRenderer.generate(pInfo.title, { w: 2048, h: 256, size: '140px', weight: '300', family: '"Inter", sans-serif', color: '#ffffff', align: 'left', glow: 20, glowColor: '#ff5500' });
-            const vrDesc  = CanvasRenderer.generate('UBICACI\u00d3N REGISTRADA', { w: 2048, h: 128, size: '70px', weight: '700', family: '"JetBrains Mono", monospace', color: '#ff5500', align: 'left', glow: 5 });
+            const sceneTex = UIManager.getSceneTitleTextures(pInfo.title);
             const tEl = document.getElementById('vr-title-txt');
             const dEl = document.getElementById('vr-subtitle-txt');
-            if (tEl) tEl.setAttribute('material', `src: url(${vrTitle}); transparent: true; shader: flat; alphaTest: 0.5`);
-            if (dEl) dEl.setAttribute('material', `src: url(${vrDesc}); transparent: true; shader: flat; alphaTest: 0.5`);
+            if (tEl) tEl.setAttribute('material', sceneTex.title);
+            if (dEl) dEl.setAttribute('material', sceneTex.desc);
 
             // 5. Reload only hotspots
             HotspotManager.clear();
@@ -849,6 +865,10 @@ const UIState = {
 
 const UIManager = {
     _galleryCooldownUntil: 0,
+    _galleryPage: 0,
+    _galleryItems: [],
+    _galleryPageSize: 6,
+    _sceneTitleCache: new Map(),
     _menuDragActive: false,
     _menuDragUntil: 0,
     _menuDragRaf: null,
@@ -864,6 +884,19 @@ const UIManager = {
     init() {
         this._buildStaticTextures();
         Log.ok('UI', 'Static textures built');
+    },
+
+    getSceneTitleTextures(title) {
+        const key = title || '';
+        if (this._sceneTitleCache.has(key)) return this._sceneTitleCache.get(key);
+        const titleUrl = CanvasRenderer.generate(key, { w: 2048, h: 256, size: '140px', weight: '300', family: '"Inter", sans-serif', color: '#ffffff', align: 'left', glow: 20, glowColor: '#ff5500' });
+        const descUrl = CanvasRenderer.generate('UBICACI\u00d3N REGISTRADA', { w: 2048, h: 128, size: '70px', weight: '700', family: '"JetBrains Mono", monospace', color: '#ff5500', align: 'left', glow: 5 });
+        const tex = {
+            title: `src: url(${titleUrl}); transparent: true; shader: flat; alphaTest: 0.5`,
+            desc: `src: url(${descUrl}); transparent: true; shader: flat; alphaTest: 0.5`
+        };
+        this._sceneTitleCache.set(key, tex);
+        return tex;
     },
 
     syncEyeLevel() {
@@ -956,7 +989,7 @@ const UIManager = {
         
         this.recenterUI();
         document.getElementById('vr-menu').setAttribute('visible', 'true');
-        document.querySelectorAll('#vr-menu .ui-button:not(#menu-close)').forEach(el => el.classList.add('interactable'));
+        document.querySelectorAll('#vr-menu .ui-button:not(#menu-close), #vr-menu .drag-dot').forEach(el => el.classList.add('interactable'));
         document.getElementById('menu-close')?.classList.remove('interactable');
         document.getElementById('menu-drag-timer-txt')?.setAttribute('visible', 'false');
         UIState.menuVisible = true;
@@ -967,7 +1000,7 @@ const UIManager = {
     hideMenu() {
         this.stopMenuDrag();
         document.getElementById('vr-menu').setAttribute('visible', 'false');
-        document.querySelectorAll('#vr-menu .ui-button').forEach(el => el.classList.remove('interactable'));
+        document.querySelectorAll('#vr-menu .ui-button, #vr-menu .drag-dot').forEach(el => el.classList.remove('interactable'));
         UIState.menuVisible = false;
         Log.info('UI', 'Menu hidden');
     },
@@ -988,7 +1021,7 @@ const UIManager = {
             if (!gal) { Log.error('UI', 'vr-gallery element not found'); return; }
             gal.setAttribute('visible', 'true');
             // Re-enable interactable on gallery elements so raycaster can hit them
-            gal.querySelectorAll('.gal-thumb, .ui-button').forEach(el => {
+            gal.querySelectorAll('.gal-thumb, .ui-button, .raycast-blocker').forEach(el => {
                 el.classList.add('interactable');
             });
             InputManager.refreshCursor();
@@ -1007,7 +1040,7 @@ const UIManager = {
             if (gal) {
                 gal.setAttribute('visible', 'false');
                 // Remove interactable from ALL gallery children so they stop blocking raycaster
-                gal.querySelectorAll('.gal-thumb, .ui-button').forEach(el => {
+                gal.querySelectorAll('.gal-thumb, .ui-button, .raycast-blocker').forEach(el => {
                     el.classList.remove('interactable');
                 });
             }
@@ -1030,7 +1063,7 @@ const UIManager = {
         const gal = document.getElementById('vr-gallery');
         if (gal) {
             gal.setAttribute('visible', 'false');
-            gal.querySelectorAll('.gal-thumb, .ui-button').forEach(el => {
+            gal.querySelectorAll('.gal-thumb, .ui-button, .raycast-blocker').forEach(el => {
                 el.classList.remove('interactable');
             });
         }
@@ -1075,17 +1108,31 @@ const UIManager = {
     },
 
     build3DGallery(panoramas) {
+        this._galleryItems = panoramas.slice();
+        this._galleryPage = 0;
+        this._renderGalleryPage();
+    },
+
+    _renderGalleryPage() {
         const grid = document.getElementById('gallery-grid');
         if (!grid) { Log.error('UI', 'gallery-grid not found'); return; }
         // Remove old children safely
         while (grid.firstChild) grid.removeChild(grid.firstChild);
         
+        const panoramas = this._galleryItems;
+        const totalPages = Math.max(1, Math.ceil(panoramas.length / this._galleryPageSize));
+        this._galleryPage = Math.max(0, Math.min(this._galleryPage, totalPages - 1));
+        const pageItems = panoramas.slice(
+            this._galleryPage * this._galleryPageSize,
+            (this._galleryPage + 1) * this._galleryPageSize
+        );
+
         const cols = 3, cellW = 0.48, cellH = 0.26, gapX = 0.05, gapY = 0.045;
-        const totalRows = Math.ceil(panoramas.length / cols);
+        const totalRows = 2;
         const stepY = cellH + gapY;
         const startY = ((totalRows - 1) * stepY) / 2;
         
-        panoramas.forEach((p, i) => {
+        pageItems.forEach((p, i) => {
             const col = i % cols, row = Math.floor(i / cols);
             const x = (col - 1) * (cellW + gapX);
             const y = startY - (row * stepY);
@@ -1099,24 +1146,42 @@ const UIManager = {
             box.setAttribute('material', `src: #tex-${p.id.replace(/\./g, '-')}; shader: flat; repeat: 0.42 0.42; offset: 0.29 0.29`);
             grid.appendChild(box);
         });
-        
-        // Reposition close button below the grid
+
+        const prevBtn = document.getElementById('gal-prev-page');
+        const nextBtn = document.getElementById('gal-next-page');
+        if (prevBtn) {
+            prevBtn.setAttribute('visible', totalPages > 1 ? 'true' : 'false');
+            prevBtn.classList.toggle('interactable', UIState.galleryVisible && totalPages > 1);
+        }
+        if (nextBtn) {
+            nextBtn.setAttribute('visible', totalPages > 1 ? 'true' : 'false');
+            nextBtn.classList.toggle('interactable', UIState.galleryVisible && totalPages > 1);
+        }
+        const pageTxt = document.getElementById('gal-page-txt');
+        if (pageTxt) {
+            const label = `${this._galleryPage + 1}/${totalPages}`;
+            pageTxt.setAttribute('material', `src: url(${CanvasRenderer.generate(label, { w: 600, h: 160, size: '76px', color: '#dddddd', family: '"JetBrains Mono", monospace', weight: '700' })}); transparent: true; shader: flat; alphaTest: 0.5`);
+        }
+
         const closeBtn = document.getElementById('gal-close-btn');
         if (closeBtn) {
-            const bottomY = -(startY + (cellH / 2)) - 0.22;
-            closeBtn.setAttribute('position', `0 ${bottomY} 0.01`);
+            closeBtn.setAttribute('position', '0 -0.76 0.01');
         }
-        
-        // Adjust gallery panel height dynamically
-        const contentH = totalRows > 0 ? ((totalRows - 1) * stepY + cellH) : cellH;
-        const panelH = contentH + 0.78;
+
         const galBg = grid.parentElement ? grid.parentElement.querySelector('.raycast-blocker') : null;
-        if (galBg) galBg.setAttribute('geometry', `primitive: plane; width: 2.4; height: ${panelH}`);
+        if (galBg) galBg.setAttribute('geometry', 'primitive: plane; width: 2.4; height: 1.8');
         
-        Log.ok('UI', `3D Gallery built: ${panoramas.length} thumbs, ${totalRows} rows`);
+        Log.ok('UI', `3D Gallery page ${this._galleryPage + 1}/${totalPages}`);
         
         // Must refresh raycaster after dynamic element creation
         setTimeout(() => InputManager.refreshCursor(), 300);
+    },
+
+    changeGalleryPage(dir) {
+        const totalPages = Math.max(1, Math.ceil(this._galleryItems.length / this._galleryPageSize));
+        this._galleryPage = (this._galleryPage + dir + totalPages) % totalPages;
+        AudioManager.click();
+        this._renderGalleryPage();
     },
 
     _buildStaticTextures() {
@@ -1154,6 +1219,9 @@ const UIManager = {
         
         // Gallery modal
         set('gal-title-txt',  t('BASE DE DATOS VISUAL', 2048, 250, '130px', '#ff5500', 15));
+        set('gal-prev-page-txt', t('<', 500, 200, '110px', '#dddddd', 8));
+        set('gal-next-page-txt', t('>', 500, 200, '110px', '#dddddd', 8));
+        set('gal-page-txt', t('1/1', 600, 160, '76px', '#dddddd', 0));
         set('gal-close-txt',  t('X CERRAR', 800, 200, '90px', '#ff4422', 10));
         
         // Hotspot Modal
@@ -1334,6 +1402,8 @@ const InputManager = {
         else if (id === 'menu-gallery') { AudioManager.click(); UIManager.showGallery(); }
         else if (id === 'menu-close') { return; }
         else if (id === 'gal-close-btn') { AudioManager.click(); UIManager.closeGallery(); }
+        else if (id === 'gal-prev-page') { UIManager.changeGalleryPage(-1); }
+        else if (id === 'gal-next-page') { UIManager.changeGalleryPage(1); }
         else if (target.classList && target.classList.contains('gal-thumb')) {
             const gal = document.getElementById('vr-gallery');
             if (!gal || gal.getAttribute('visible') === 'false') return;
