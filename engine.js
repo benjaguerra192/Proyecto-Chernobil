@@ -334,55 +334,55 @@ const HotspotDB = {
     'menu_principal.png': [
         { type: 'info', pos: '0 0.3 -3', title: 'SARC\u00d3FAGO', desc: 'Estructura de contenci\u00f3n construida en 206 d\u00edas por 600.000 trabajadores.' },
         { type: 'info', pos: '-3 -0.2 -1', title: 'ZONA DE EXCLUSI\u00d3N', desc: '\u00c1rea de 30 km de radio. Evacuada permanentemente.' },
-        { type: 'audio', target: 'trabajador_1', pos: '2 0.15 -2.4', title: 'INICIO DEL RECORRIDO', desc: 'Introduccion hablada para ubicar al visitante antes de entrar al reactor.' },
+        { type: 'audio', target: 'voz_menu_principal', pos: '2 0.15 -2.4', title: 'INICIO DEL RECORRIDO', desc: 'Introduccion hablada para ubicar al visitante antes de entrar al reactor.' },
         { type: 'scene', target: 'control_room_1.png', pos: '0 -0.35 -3', title: 'ENTRAR A CONTROL', desc: 'Ir a la sala de control del Reactor 4.' },
     ],
     'control_room_1.png': [
-        { type: 'audio', target: 'trabajador_1', pos: '-1.5 0.1 -3', title: 'CONSOLA AZ-5', desc: 'Boton de parada de emergencia. Al presionarlo a la 1:23 AM se inicio la reaccion en cadena.' },
+        { type: 'audio', target: 'voz_control_1', pos: '-1.5 0.1 -3', title: 'CONSOLA AZ-5', desc: 'Boton de parada de emergencia. Al presionarlo a la 1:23 AM se inicio la reaccion en cadena.' },
         { type: 'info', pos: '2 0.2 -2', title: 'PANEL DE REFRIGERACION', desc: 'Bombas de circulacion del refrigerante. La falta de caudal provoco sobrecalentamiento.' },
         { type: 'info', pos: '-1.8 -0.4 -2', title: 'BITACORAS', desc: 'Registros de los operadores. Demuestran que el reactor operaba en inestabilidad total.' },
         { type: 'scene', target: 'reactor_control_rods_zone.png', pos: '-2.4 0.35 -2.3', title: 'ZONA DE BARRAS', desc: 'Ir a la tapa superior del reactor, donde estaban los canales y barras de control.' },
     ],
     'control_room_2.png': [
         { type: 'info', pos: '-2 0.5 -2', title: 'ALARMAS INHABILITADAS', desc: 'Panel de avisos sonoros. Los operadores desconectaron las alarmas.' },
-        { type: 'audio', target: 'trabajador_2', pos: '1.5 0 -3', title: 'LECTURAS TERMICAS', desc: 'Indicadores analogicos de temperatura. Varios clavados en su valor maximo.' },
+        { type: 'audio', target: 'voz_control_2', pos: '1.5 0 -3', title: 'LECTURAS TERMICAS', desc: 'Indicadores analogicos de temperatura. Varios clavados en su valor maximo.' },
         { type: 'scene', target: 'reactor_control_rods_zone.png', pos: '-2.2 -0.2 -2.5', title: 'ZONA DE BARRAS', desc: 'Ir a la zona fisica de los canales de barras sobre el reactor.' },
     ],
     'control_room_3.png': [
         { type: 'info', pos: '-1.5 0.3 -3', title: 'PANELES DE CONTROL', desc: 'Instrumentos de monitoreo del reactor adyacente.' },
         { type: 'info', pos: '2 -0.1 -2', title: 'COMUNICACIONES', desc: 'Terminal de comunicacion interna. Primeras llamadas de emergencia.' },
-        { type: 'audio', target: 'trabajador_2', pos: '0 0.2 -3', title: 'ORDENES CRUZADAS', desc: 'Dialogo de operadores intentando entender que ocurria en la unidad contigua.' },
+        { type: 'audio', target: 'voz_control_3', pos: '0 0.2 -3', title: 'ORDENES CRUZADAS', desc: 'Dialogo de operadores intentando entender que ocurria en la unidad contigua.' },
         { type: 'scene', target: 'control_room_3_quemado.png', pos: '1.6 -0.35 -2.4', title: 'VER DA\u00d1O', desc: 'Ir a la misma zona luego del incendio.' },
     ],
     'control_room_3_quemado.png': [
-        { type: 'audio', target: 'caos', pos: '1 0 -3', title: 'MARCAS DE FUEGO', desc: 'Paredes carbonizadas por el incendio de grafito durante 10 dias.' },
+        { type: 'audio', target: 'voz_control_3_danio', pos: '1 0 -3', title: 'MARCAS DE FUEGO', desc: 'Paredes carbonizadas por el incendio de grafito durante 10 dias.' },
         { type: 'info', pos: '-2 0.3 -1.5', title: 'CONTAMINACION', desc: 'Superficie con cesio-137 incrustado. Niveles mortales.' },
         { type: 'info', pos: '0 -0.35 -3', title: 'EQUIPOS INUTILIZADOS', desc: 'El calor, humo y polvo radiactivo dejaron instrumentos fuera de servicio o imposibles de leer.' },
         { type: 'scene', target: 'control_room_4.png', pos: '2 -0.2 -2.2', title: 'ZONA DESTRUIDA', desc: 'Avanzar hacia el sector mas afectado.' },
     ],
     'control_room_4.png': [
         { type: 'info', pos: '0 0.8 -3', title: 'COLAPSO DEL TECHO', desc: 'Losa superior colapsada. Presion del vapor 10 veces sobre el limite.' },
-        { type: 'audio', target: 'trabajador_caos', pos: '-2 -0.2 -2', title: 'INCENDIO DE GRAFITO', desc: 'El moderador ardio 10 dias esparciendo isotopos por Europa.' },
+        { type: 'audio', target: 'voz_control_4', pos: '-2 -0.2 -2', title: 'INCENDIO DE GRAFITO', desc: 'El moderador ardio 10 dias esparciendo isotopos por Europa.' },
         { type: 'info', pos: '2 -0.3 -2.5', title: 'TUBERIAS ROTAS', desc: 'Acero fundido por temperaturas de 2000 grados Celsius.' },
     ],
     'reactor_control_rods_zone.png': [
         { type: 'info', pos: '0 -0.45 -3', title: 'TAPA DEL REACTOR', desc: 'Zona superior del RBMK. Bajo estas placas estaban los canales tecnologicos, las barras de control y el recorrido hacia el nucleo.' },
         { type: 'info', pos: '-1.8 -0.25 -2.5', title: 'CANALES DE BARRAS', desc: 'Cada abertura corresponde a un canal o posicion tecnica. Las barras absorbentes debian entrar por estos canales para frenar la reaccion.' },
         { type: 'info', pos: '1.7 -0.15 -2.6', title: 'NUCLEO BAJO LA LOSA', desc: 'El nucleo estaba debajo de esta superficie. Durante el accidente, la presion de vapor rompio canales y desplazo estructuras superiores.' },
-        { type: 'audio', target: 'trabajador_1', pos: '0 0.35 -3', title: 'LECTURA DE CANALES', desc: 'Audio contextual de operadores antes de la perdida de control.' },
+        { type: 'audio', target: 'voz_barras_control', pos: '0 0.35 -3', title: 'LECTURA DE CANALES', desc: 'Audio contextual de operadores antes de la perdida de control.' },
         { type: 'scene', target: 'reactor_explosion_moment.png', pos: '2 0.25 -2.3', title: 'MOMENTO CRITICO', desc: 'Ir a la recreacion del instante de explosion.' },
     ],
     'reactor_explosion_moment.png': [
         { type: 'info', pos: '0 0.4 -3', title: 'PICO DE POTENCIA', desc: 'La potencia subio violentamente en segundos. El vapor destruyo canales y levanto la tapa del reactor.' },
         { type: 'info', pos: '2 0 -2.4', title: 'EXPLOSION DE VAPOR', desc: 'La primera explosion fue impulsada por presion de vapor. Luego el grafito expuesto empeoro la liberacion radiactiva.' },
-        { type: 'audio', target: 'caos', pos: '-1.8 -0.1 -2.6', title: 'CAOS EN PLANTA', desc: 'Audio de emergencia para reforzar la escena del accidente.' },
+        { type: 'audio', target: 'voz_explosion', pos: '-1.8 -0.1 -2.6', title: 'CAOS EN PLANTA', desc: 'Audio de emergencia para reforzar la escena del accidente.' },
         { type: 'info', pos: '0 -0.4 -2.8', title: 'GRAFITO EXPUESTO', desc: 'La ruptura dejo material del nucleo al aire. Eso intensifico incendios y liberacion de particulas.' },
         { type: 'scene', target: 'reactor_roof.png', pos: '1.6 0.35 -2.5', title: 'IR AL TECHO', desc: 'Ver la zona donde cayeron fragmentos de grafito.' },
     ],
     'reactor_roof.png': [
         { type: 'info', pos: '-1.5 -0.3 -3', title: 'RESTOS DE GRAFITO', desc: 'Fragmentos del nucleo. 10.000 rontgens por hora. Dosis letal en minutos.' },
         { type: 'info', pos: '2 0.6 -2', title: 'ZONA MASHA', desc: 'Area mas contaminada. Los robots fallaron por la radiacion.' },
-        { type: 'audio', target: 'trabajador_2', pos: '1.5 -0.6 -2.5', title: 'BIOROBOTS', desc: 'Liquidadores humanos. 90 segundos con palas en el techo.' },
+        { type: 'audio', target: 'voz_techo_reactor', pos: '1.5 -0.6 -2.5', title: 'BIOROBOTS', desc: 'Liquidadores humanos. 90 segundos con palas en el techo.' },
         { type: 'info', pos: '0 0.15 -3', title: 'DOSIS LETAL', desc: 'En algunos puntos, permanecer mas de pocos minutos podia ser fatal. Las tareas se hicieron por turnos brevisimos.' },
         { type: 'scene', target: 'elephants_foot.png', pos: '-2 0.2 -2.2', title: 'BAJAR AL SOTANO', desc: 'Ir al recorrido del corium conocido como Pie de Elefante.' },
     ],
@@ -390,13 +390,13 @@ const HotspotDB = {
         { type: 'info', pos: '1 -0.1 -3', title: 'CORIUM', desc: 'Masa fundida de uranio, grafito y hormigon. Temperatura interna de 300 grados.' },
         { type: 'info', pos: '-1.5 0.3 -2', title: 'RADIACION FANTASMA', desc: 'Grano fotografico distorsionado por particulas gamma.' },
         { type: 'info', pos: '1.5 -0.5 -2', title: 'HORMIGON FUNDIDO', desc: 'El corium fundio 2 metros de hormigon en el pasillo 217.' },
-        { type: 'audio', target: 'trabajador_caos', pos: '-0.2 -0.25 -3', title: 'LECTURA IMPOSIBLE', desc: 'Dialogo para transmitir la dificultad de medir cerca del corium.' },
+        { type: 'audio', target: 'voz_pie_elefante', pos: '-0.2 -0.25 -3', title: 'LECTURA IMPOSIBLE', desc: 'Dialogo para transmitir la dificultad de medir cerca del corium.' },
     ],
     'pripyat_ferris_wheel.png': [
         { type: 'info', pos: '0 0.8 -3', title: 'NORIA DE PRIPYAT', desc: 'Debia inaugurarse el 1 de mayo de 1986. Jamas fue utilizada.' },
         { type: 'info', pos: '-2.5 0 -1.5', title: 'CIUDAD FANTASMA', desc: 'Pripyat tenia 49.000 habitantes. Evacuada en 3 horas.' },
         { type: 'info', pos: '2 -0.3 -2', title: 'ZONA RECREATIVA', desc: 'Simbolo del progreso sovietico. Hoy icono del desastre.' },
-        { type: 'audio', target: 'trabajador_1', pos: '0 -0.35 -3', title: 'EVACUACION', desc: 'Mensaje de evacuacion recreado para cerrar el recorrido.' },
+        { type: 'audio', target: 'voz_pripyat', pos: '0 -0.35 -3', title: 'EVACUACION', desc: 'Mensaje de evacuacion recreado para cerrar el recorrido.' },
     ],
 };
 
@@ -619,8 +619,8 @@ const HotspotManager = {
                 root.setAttribute('data-tex-desc', `src: url(${dImg}); transparent: true; shader: flat`);
             }
 
-            // Position - use radius 1.5 so hotspots are close enough to read comfortably
-            const pos = this._normalizePos(pt.pos, 1.5);
+            // Keep hotspots behind VR panels so menus always win the raycast.
+            const pos = this._normalizePos(pt.pos, 2.35);
             root.setAttribute('position', pos);
             root.setAttribute('visible', 'true');
             root.classList.add('active-hs');
@@ -1187,6 +1187,11 @@ const InputManager = {
             if (!this._active || StateManager.transitioning) return;
             const target = e.detail.els[0];
             if (!target) return;
+            if (this._isRaycastBlocker(target)) {
+                this._clearAudioHover();
+                this._startFuse(target);
+                return;
+            }
             this._handleAudioHover(target);
             this._startFuse(target);
         });
@@ -1205,6 +1210,8 @@ const InputManager = {
                  return;
              }
              if (this._fuseTarget && this._active && !StateManager.transitioning) {
+                 e.preventDefault();
+                 e.stopPropagation();
                  this._triggerClick(this._fuseTarget);
                  this._cancelFuse();
              }
@@ -1279,6 +1286,11 @@ const InputManager = {
     _triggerClick(target) {
         if (!target) return;
         Log.info('INPUT', `_triggerClick on: ${target.id || target.className}`);
+
+        if (this._isRaycastBlocker(target)) {
+            Log.info('INPUT', 'Raycast blocker consumed click');
+            return;
+        }
         
         const id = target.id;
 
@@ -1347,6 +1359,14 @@ const InputManager = {
         document.querySelectorAll('.raycast-blocker').forEach(el => {
             el.addEventListener('click', (e) => { e.stopPropagation(); });
         });
+    },
+
+    _isRaycastBlocker(target) {
+        if (!target || !target.closest) return false;
+        const blocker = target.closest('.raycast-blocker');
+        if (!blocker) return false;
+        const owner = blocker.closest('[visible]');
+        return !owner || owner.getAttribute('visible') !== 'false';
     },
 
     _bindVRModeEvents() {
