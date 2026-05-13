@@ -376,12 +376,17 @@ const SubtitleManager = {
 
     _updateToggleLabel() {
         const el = document.getElementById('menu-subtitles-txt');
+        const btn = document.getElementById('menu-subtitles');
         if (!el) return;
-        const label = this.enabled ? 'SUB' : 'OFF';
-        const color = this.enabled ? '#44ff88' : '#888888';
-        const img = CanvasRenderer.generate(label, {
-            w: 400, h: 180, size: '82px', color,
-            family: '"JetBrains Mono", monospace', weight: '700', glow: this.enabled ? 7 : 0
+        const color = this.enabled ? '#34d66b' : '#d63a34';
+        const bg = this.enabled ? '#05240f' : '#260606';
+        if (btn) {
+            btn.setAttribute('material', 'color', bg);
+            btn.setAttribute('material', 'opacity', '0.82');
+        }
+        const img = CanvasRenderer.generate('CC', {
+            w: 400, h: 180, size: '88px', color,
+            family: '"Inter", sans-serif', weight: '900', glow: 8
         });
         el.setAttribute('material', `src: url(${img}); transparent: true; shader: flat; alphaTest: 0.5`);
     }
