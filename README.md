@@ -21,6 +21,7 @@ El proyecto funciona como sitio estatico: no necesita backend ni base de datos.
 | Cambiar escena | Botones o hotspot de escena | Mirada sobre hotspot |
 | Reproducir audio | Hotspot azul | Mirada sobre hotspot azul |
 | Mover menu VR | Mirar el control superior 3 segundos | El menu sigue la mirada 5 segundos |
+| Subtitulos | Boton `SUB` en menu VR | Activa o desactiva textos de audio |
 
 ## Hotspots
 

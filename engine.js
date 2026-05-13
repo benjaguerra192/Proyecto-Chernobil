@@ -74,6 +74,17 @@ const AudioManager = {
     _currentVoice: null,
     _lastVoiceStart: 0,
     _fadeIntervals: new WeakMap(),
+    SUBTITLES: {
+        voz_menu_principal: 'Frente al reactor cuatro queda el sarc\u00f3fago. Fue una respuesta de emergencia para encerrar radiaci\u00f3n, polvo y restos del n\u00facleo.',
+        voz_control_1: 'Sala de control, turno nocturno. La potencia cae m\u00e1s de lo previsto y los indicadores ya no cuentan una historia clara.',
+        voz_control_2: 'Las alarmas empiezan a cruzarse. Hay canales inestables y una presi\u00f3n que sube demasiado r\u00e1pido para corregirla desde la consola.',
+        voz_control_3: 'Aqu\u00ed la confusi\u00f3n se vuelve f\u00edsica. Un operador pide bajar potencia, otro confirma el procedimiento, y el reactor ya est\u00e1 fuera de control.',
+        voz_control_3_danio: 'Despu\u00e9s del incendio, la sala deja de parecer un lugar de mando. Cables, metal quemado y polvo radiactivo vuelven peligroso cada paso.',
+        voz_barras_control: 'Esta es la tapa superior del reactor RBMK. Cada punto marca un canal: combustible, sensores o barras de control.',
+        voz_explosion: 'En segundos, el vapor rompe la estructura. La tapa del reactor se desplaza, los canales se abren y el grafito caliente queda expuesto.',
+        voz_techo_reactor: 'En el techo, los fragmentos negros no son escombros comunes: son grafito del n\u00facleo. Cada pedazo emite una dosis enorme.',
+        voz_pie_elefante: 'El pie de elefante es corium solidificado: combustible, arena, metal y hormig\u00f3n fundidos juntos. Acercarse demasiado pod\u00eda ser mortal.'
+    },
     
     // Scene to audio mapping
     _tracks: {
@@ -107,6 +118,7 @@ const AudioManager = {
         
         this._voice.addEventListener('ended', () => {
             this._currentVoice = null;
+            if (typeof SubtitleManager !== 'undefined') SubtitleManager.hide();
             this.fadeVolume(this._ambient, 0.25, 1000);
         });
 
@@ -170,8 +182,10 @@ const AudioManager = {
         }
         this._voice.src = `./Audios/${voiceId}.mp3`;
         this._voice.volume = 1.0;
+        if (typeof SubtitleManager !== 'undefined') SubtitleManager.show(voiceId, this.SUBTITLES[voiceId]);
         this._voice.play().catch(e => {
             this._currentVoice = null;
+            if (typeof SubtitleManager !== 'undefined') SubtitleManager.hide();
             Log.warn('AUDIO', 'Voice autoplay blocked');
             this.fadeVolume(this._ambient, 0.25, 500);
         });
@@ -183,6 +197,7 @@ const AudioManager = {
         if (!this._voice || this._voice.paused) return;
         this._voice.pause();
         this._voice.currentTime = 0;
+        if (typeof SubtitleManager !== 'undefined') SubtitleManager.hide();
         this.fadeVolume(this._ambient, 0.25, 500);
         Log.info('AUDIO', 'Voice stopped');
     },
@@ -307,6 +322,69 @@ const CanvasRenderer = {
 
         return canvas.toDataURL();
     },
+};
+
+// ============================================================
+// SUBTITLE MANAGER - camera-fixed captions for VR/Cardboard
+// ============================================================
+const SubtitleManager = {
+    enabled: true,
+    _activeText: '',
+    _textureCache: new Map(),
+
+    toggle() {
+        this.enabled = !this.enabled;
+        this._updateToggleLabel();
+        if (this.enabled && this._activeText) this._render(this._activeText);
+        else this.hide({ keepText: true });
+    },
+
+    show(voiceId, text) {
+        this._activeText = text || '';
+        if (!this.enabled || !this._activeText) {
+            this.hide({ keepText: true });
+            return;
+        }
+        this._render(this._activeText);
+    },
+
+    hide(opts = {}) {
+        const panel = document.getElementById('vr-caption-panel');
+        if (panel) panel.setAttribute('visible', 'false');
+        if (!opts.keepText) this._activeText = '';
+    },
+
+    _render(text) {
+        const panel = document.getElementById('vr-caption-panel');
+        const txt = document.getElementById('vr-caption-txt');
+        if (!panel || !txt) return;
+        const tex = this._getTexture(text);
+        txt.setAttribute('material', tex);
+        panel.setAttribute('visible', 'true');
+    },
+
+    _getTexture(text) {
+        if (this._textureCache.has(text)) return this._textureCache.get(text);
+        const img = CanvasRenderer.generate(text, {
+            w: 2200, h: 420, size: '78px', color: '#ffffff',
+            family: '"Inter", sans-serif', weight: '700', wrap: true
+        });
+        const tex = `src: url(${img}); transparent: true; shader: flat; alphaTest: 0.5`;
+        this._textureCache.set(text, tex);
+        return tex;
+    },
+
+    _updateToggleLabel() {
+        const el = document.getElementById('menu-subtitles-txt');
+        if (!el) return;
+        const label = this.enabled ? 'SUB' : 'OFF';
+        const color = this.enabled ? '#44ff88' : '#888888';
+        const img = CanvasRenderer.generate(label, {
+            w: 400, h: 180, size: '82px', color,
+            family: '"JetBrains Mono", monospace', weight: '700', glow: this.enabled ? 7 : 0
+        });
+        el.setAttribute('material', `src: url(${img}); transparent: true; shader: flat; alphaTest: 0.5`);
+    }
 };
 
 // ============================================================
@@ -979,8 +1057,7 @@ const UIManager = {
         
         this.recenterUI();
         document.getElementById('vr-menu').setAttribute('visible', 'true');
-        document.querySelectorAll('#vr-menu .ui-button:not(#menu-close), #vr-menu .drag-dot').forEach(el => el.classList.add('interactable'));
-        document.getElementById('menu-close')?.classList.remove('interactable');
+        document.querySelectorAll('#vr-menu .ui-button, #vr-menu .drag-dot').forEach(el => el.classList.add('interactable'));
         document.getElementById('menu-drag-timer-txt')?.setAttribute('visible', 'false');
         UIState.menuVisible = true;
         Log.info('UI', 'Menu shown');
@@ -1205,7 +1282,7 @@ const UIManager = {
         set('menu-prev-txt',  t('< ANT', 600, 200, '90px', '#dddddd', 5));
         set('menu-gal-txt',   t('GALER\u00cdA', 1000, 200, '100px', '#ff8844', 10));
         set('menu-next-txt',  t('SIG >', 600, 200, '90px', '#dddddd', 5));
-        set('menu-close-txt', t('X', 400, 200, '100px', '#ff4422', 10));
+        SubtitleManager._updateToggleLabel();
         
         // Gallery modal
         set('gal-title-txt',  t('BASE DE DATOS VISUAL', 2048, 250, '130px', '#ff5500', 15));
@@ -1390,7 +1467,7 @@ const InputManager = {
         if (id === 'menu-prev') { AudioManager.click(); SceneManager.navigate(-1); }
         else if (id === 'menu-next') { AudioManager.click(); SceneManager.navigate(1); }
         else if (id === 'menu-gallery') { AudioManager.click(); UIManager.showGallery(); }
-        else if (id === 'menu-close') { return; }
+        else if (id === 'menu-subtitles') { AudioManager.click(); SubtitleManager.toggle(); }
         else if (id === 'gal-close-btn') { AudioManager.click(); UIManager.closeGallery(); }
         else if (id === 'gal-prev-page') { UIManager.changeGalleryPage(-1); }
         else if (id === 'gal-next-page') { UIManager.changeGalleryPage(1); }
