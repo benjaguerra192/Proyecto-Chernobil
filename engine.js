@@ -82,7 +82,6 @@ const AudioManager = {
         'control_room_2.png':         './Audios/panic.mp3',
         'control_room_3.png':         './Audios/control-rooms.mp3',
         'control_room_3_quemado.png': './Audios/radiation.mp3',
-        'control_room_4.png':         './Audios/radiation.mp3',
         'reactor_control_rods_zone.png': './Audios/radiation.mp3',
         'reactor_explosion_moment.png': './Audios/caos.mp3',
         'reactor_roof.png':           './Audios/radiation.mp3',
@@ -319,7 +318,6 @@ const SceneConfig = {
     'control_room_2.png':          { fov: 75 },
     'control_room_3.png':          { fov: 75 },
     'control_room_3_quemado.png':  { fov: 75 },
-    'control_room_4.png':          { fov: 78 },
     'reactor_control_rods_zone.png': { fov: 74 },
     'reactor_explosion_moment.png': { fov: 78 },
     'reactor_roof.png':            { fov: 72 },
@@ -334,42 +332,36 @@ const HotspotDB = {
     'menu_principal.png': [
         { type: 'info', pos: '0 0.3 -3', title: 'SARC\u00d3FAGO', desc: 'Estructura de contenci\u00f3n construida en 206 d\u00edas por 600.000 trabajadores.' },
         { type: 'info', pos: '-3 -0.2 -1', title: 'ZONA DE EXCLUSI\u00d3N', desc: '\u00c1rea de 30 km de radio. Evacuada permanentemente.' },
-        { type: 'audio', target: 'voz_menu_principal', pos: '2 0.15 -2.4', title: 'INICIO DEL RECORRIDO', desc: 'Introduccion hablada para ubicar al visitante antes de entrar al reactor.' },
+        { type: 'audio', target: 'voz_menu_principal', pos: '2 0.15 -2.4', title: 'INICIO DEL RECORRIDO', desc: 'Introducci\u00f3n hablada para ubicar al visitante antes de entrar al reactor.' },
         { type: 'scene', target: 'control_room_1.png', pos: '0 -0.35 -3', title: 'ENTRAR A CONTROL', desc: 'Ir a la sala de control del Reactor 4.' },
     ],
     'control_room_1.png': [
-        { type: 'audio', target: 'voz_control_1', pos: '-1.5 0.1 -3', title: 'CONSOLA AZ-5', desc: 'Boton de parada de emergencia. Al presionarlo a la 1:23 AM se inicio la reaccion en cadena.' },
+        { type: 'audio', target: 'voz_control_1', pos: '-1.5 0.1 -3', title: 'CONSOLA AZ-5', desc: 'Bot\u00f3n de parada de emergencia. Al presionarlo a la 1:23 AM se inici\u00f3 la reacci\u00f3n en cadena.' },
         { type: 'info', pos: '2 0.2 -2', title: 'PANEL DE REFRIGERACION', desc: 'Bombas de circulacion del refrigerante. La falta de caudal provoco sobrecalentamiento.' },
         { type: 'info', pos: '-1.8 -0.4 -2', title: 'BITACORAS', desc: 'Registros de los operadores. Demuestran que el reactor operaba en inestabilidad total.' },
         { type: 'scene', target: 'reactor_control_rods_zone.png', pos: '-2.4 0.35 -2.3', title: 'ZONA DE BARRAS', desc: 'Ir a la tapa superior del reactor, donde estaban los canales y barras de control.' },
     ],
     'control_room_2.png': [
         { type: 'info', pos: '-2 0.5 -2', title: 'ALARMAS INHABILITADAS', desc: 'Panel de avisos sonoros. Los operadores desconectaron las alarmas.' },
-        { type: 'audio', target: 'voz_control_2', pos: '1.5 0 -3', title: 'LECTURAS TERMICAS', desc: 'Indicadores analogicos de temperatura. Varios clavados en su valor maximo.' },
+        { type: 'audio', target: 'voz_control_2', pos: '1.5 0 -3', title: 'LECTURAS T\u00c9RMICAS', desc: 'Indicadores anal\u00f3gicos de temperatura. Varios clavados en su valor m\u00e1ximo.' },
         { type: 'scene', target: 'reactor_control_rods_zone.png', pos: '-2.2 -0.2 -2.5', title: 'ZONA DE BARRAS', desc: 'Ir a la zona fisica de los canales de barras sobre el reactor.' },
     ],
     'control_room_3.png': [
         { type: 'info', pos: '-1.5 0.3 -3', title: 'PANELES DE CONTROL', desc: 'Instrumentos de monitoreo del reactor adyacente.' },
         { type: 'info', pos: '2 -0.1 -2', title: 'COMUNICACIONES', desc: 'Terminal de comunicacion interna. Primeras llamadas de emergencia.' },
-        { type: 'audio', target: 'voz_control_3', pos: '0 0.2 -3', title: 'ORDENES CRUZADAS', desc: 'Dialogo de operadores intentando entender que ocurria en la unidad contigua.' },
+        { type: 'audio', target: 'voz_control_3', pos: '0 0.2 -3', title: '\u00d3RDENES CRUZADAS', desc: 'Di\u00e1logo de operadores intentando entender qu\u00e9 ocurr\u00eda en la unidad contigua.' },
         { type: 'scene', target: 'control_room_3_quemado.png', pos: '1.6 -0.35 -2.4', title: 'VER DA\u00d1O', desc: 'Ir a la misma zona luego del incendio.' },
     ],
     'control_room_3_quemado.png': [
-        { type: 'audio', target: 'voz_control_3_danio', pos: '1 0 -3', title: 'MARCAS DE FUEGO', desc: 'Paredes carbonizadas por el incendio de grafito durante 10 dias.' },
+        { type: 'audio', target: 'voz_control_3_danio', pos: '1 0 -3', title: 'MARCAS DE FUEGO', desc: 'Paredes carbonizadas por el incendio de grafito durante 10 d\u00edas.' },
         { type: 'info', pos: '-2 0.3 -1.5', title: 'CONTAMINACION', desc: 'Superficie con cesio-137 incrustado. Niveles mortales.' },
         { type: 'info', pos: '0 -0.35 -3', title: 'EQUIPOS INUTILIZADOS', desc: 'El calor, humo y polvo radiactivo dejaron instrumentos fuera de servicio o imposibles de leer.' },
-        { type: 'scene', target: 'control_room_4.png', pos: '2 -0.2 -2.2', title: 'ZONA DESTRUIDA', desc: 'Avanzar hacia el sector mas afectado.' },
-    ],
-    'control_room_4.png': [
-        { type: 'info', pos: '0 0.8 -3', title: 'COLAPSO DEL TECHO', desc: 'Losa superior colapsada. Presion del vapor 10 veces sobre el limite.' },
-        { type: 'audio', target: 'voz_control_4', pos: '-2 -0.2 -2', title: 'INCENDIO DE GRAFITO', desc: 'El moderador ardio 10 dias esparciendo isotopos por Europa.' },
-        { type: 'info', pos: '2 -0.3 -2.5', title: 'TUBERIAS ROTAS', desc: 'Acero fundido por temperaturas de 2000 grados Celsius.' },
     ],
     'reactor_control_rods_zone.png': [
         { type: 'info', pos: '0 -0.45 -3', title: 'TAPA DEL REACTOR', desc: 'Zona superior del RBMK. Bajo estas placas estaban los canales tecnologicos, las barras de control y el recorrido hacia el nucleo.' },
         { type: 'info', pos: '-1.8 -0.25 -2.5', title: 'CANALES DE BARRAS', desc: 'Cada abertura corresponde a un canal o posicion tecnica. Las barras absorbentes debian entrar por estos canales para frenar la reaccion.' },
         { type: 'info', pos: '1.7 -0.15 -2.6', title: 'NUCLEO BAJO LA LOSA', desc: 'El nucleo estaba debajo de esta superficie. Durante el accidente, la presion de vapor rompio canales y desplazo estructuras superiores.' },
-        { type: 'audio', target: 'voz_barras_control', pos: '0 0.35 -3', title: 'LECTURA DE CANALES', desc: 'Audio contextual de operadores antes de la perdida de control.' },
+        { type: 'audio', target: 'voz_barras_control', pos: '0 0.35 -3', title: 'LECTURA DE CANALES', desc: 'Audio contextual de operadores antes de la p\u00e9rdida de control.' },
         { type: 'scene', target: 'reactor_explosion_moment.png', pos: '2 0.25 -2.3', title: 'MOMENTO CRITICO', desc: 'Ir a la recreacion del instante de explosion.' },
     ],
     'reactor_explosion_moment.png': [
@@ -390,13 +382,12 @@ const HotspotDB = {
         { type: 'info', pos: '1 -0.1 -3', title: 'CORIUM', desc: 'Masa fundida de uranio, grafito y hormigon. Temperatura interna de 300 grados.' },
         { type: 'info', pos: '-1.5 0.3 -2', title: 'RADIACION FANTASMA', desc: 'Grano fotografico distorsionado por particulas gamma.' },
         { type: 'info', pos: '1.5 -0.5 -2', title: 'HORMIGON FUNDIDO', desc: 'El corium fundio 2 metros de hormigon en el pasillo 217.' },
-        { type: 'audio', target: 'voz_pie_elefante', pos: '-0.2 -0.25 -3', title: 'LECTURA IMPOSIBLE', desc: 'Dialogo para transmitir la dificultad de medir cerca del corium.' },
+        { type: 'audio', target: 'voz_pie_elefante', pos: '-0.2 -0.25 -3', title: 'LECTURA IMPOSIBLE', desc: 'Di\u00e1logo para transmitir la dificultad de medir cerca del corium.' },
     ],
     'pripyat_ferris_wheel.png': [
-        { type: 'info', pos: '0 0.8 -3', title: 'NORIA DE PRIPYAT', desc: 'Debia inaugurarse el 1 de mayo de 1986. Jamas fue utilizada.' },
+        { type: 'info', pos: '0 0.8 -3', title: 'NORIA DE PRIPYAT', desc: 'Deb\u00eda inaugurarse el 1 de mayo de 1986. Jam\u00e1s fue utilizada.' },
         { type: 'info', pos: '-2.5 0 -1.5', title: 'CIUDAD FANTASMA', desc: 'Pripyat tenia 49.000 habitantes. Evacuada en 3 horas.' },
         { type: 'info', pos: '2 -0.3 -2', title: 'ZONA RECREATIVA', desc: 'Simbolo del progreso sovietico. Hoy icono del desastre.' },
-        { type: 'audio', target: 'voz_pripyat', pos: '0 -0.35 -3', title: 'EVACUACION', desc: 'Mensaje de evacuacion recreado para cerrar el recorrido.' },
     ],
 };
 
@@ -405,11 +396,10 @@ const HotspotDB = {
 // ============================================================
 const SceneDB = {
     'menu_principal.png':          { title: 'EL SARC\u00d3FAGO',               desc: 'Vista exterior del reactor 4 cubierto por el sarc\u00f3fago de hormig\u00f3n construido en 206 d\u00edas.' },
-    'control_room_1.png':          { title: 'SALA DE CONTROL 4',          desc: 'Epicentro del desastre. El fatal ensayo de seguridad ocurrio aqui a la 01:23 AM.' },
-    'control_room_2.png':          { title: 'PANELES DE SEGURIDAD',       desc: 'Sistemas de refrigeracion manuales. Todos los sistemas automaticos fueron desactivados.' },
-    'control_room_3.png':          { title: 'SALA DE CONTROL 3',          desc: 'Centro de operaciones adyacente. Los operadores evacuaron minutos despues de la explosion.' },
+    'control_room_1.png':          { title: 'SALA DE CONTROL',            desc: 'Epicentro operativo del ensayo de seguridad que termin\u00f3 en desastre a la 01:23 AM.' },
+    'control_room_2.png':          { title: 'PANELES DE SEGURIDAD',       desc: 'Sistemas de refrigeraci\u00f3n manuales. Todos los sistemas autom\u00e1ticos fueron desactivados.' },
+    'control_room_3.png':          { title: 'SALA DE CONTROL ALTERADA',   desc: 'Recreaci\u00f3n de la sala durante la crisis: alarmas, \u00f3rdenes cruzadas y lecturas inestables.' },
     'control_room_3_quemado.png':  { title: 'SALA DE CONTROL 3 (DA\u00d1O)',   desc: 'Misma sala tras el incendio. Las paredes muestran marcas de radiacion extrema.' },
-    'control_room_4.png':          { title: 'ZONA DESTRUIDA',             desc: 'Restos del reactor tras la explosion termica que volo la tapa de 1000 toneladas.' },
     'reactor_control_rods_zone.png': { title: 'ZONA DE BARRAS DE CONTROL', desc: 'Recreacion de la tapa superior del reactor RBMK: canales, barras de control y nucleo bajo la losa.' },
     'reactor_explosion_moment.png': { title: 'MOMENTO DE LA EXPLOSION',   desc: 'Recreacion del instante critico: aumento de potencia, vapor, fuego y ruptura del reactor.' },
     'reactor_roof.png':            { title: 'TECHO DEL REACTOR',          desc: 'El nivel mas letal. Los liquidadores trabajaron aqui recogiendo grafito altamente radiactivo.' },
@@ -1421,7 +1411,7 @@ const InputManager = {
         b('btn-prev',    () => { AudioManager.click(); SceneManager.navigate(-1); });
         b('btn-next',    () => { AudioManager.click(); SceneManager.navigate(1); });
         b('btn-gallery', () => { AudioManager.click(); UIManager.toggleSidebar(); });
-        b('btn-vr',      () => { AudioManager.click(); document.querySelector('a-scene').enterVR(); });
+        b('btn-vr',      () => { AudioManager.click(); App.enterVR(); });
         Log.ok('INPUT', 'HUD buttons bound');
     },
 
@@ -1521,6 +1511,7 @@ const App = {
         Log.init();
         if (DEBUG) document.body.classList.add('debug');
         Log.ok('APP', 'Engine V9.0 starting...');
+        this._bindMobileViewportFixes();
 
         // Wait for A-Frame scene to be ready
         const scene = document.querySelector('a-scene');
@@ -1581,6 +1572,30 @@ const App = {
         
         UIManager.hideMenu();
         SceneManager.load(StateManager.panoramas[0].id);
+    },
+
+    enterVR() {
+        const scene = document.querySelector('a-scene');
+        if (!scene || !scene.enterVR) return;
+        if (!window.isSecureContext && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+            alert('Para VR/Cardboard usa HTTPS. GitHub Pages sirve; una IP local por HTTP puede fallar.');
+        }
+        const result = scene.enterVR();
+        if (result && result.catch) {
+            result.catch(() => {
+                alert('Este navegador no pudo abrir VR/Cardboard. Proba Chrome en Android o GitHub Pages por HTTPS.');
+            });
+        }
+    },
+
+    _bindMobileViewportFixes() {
+        const resize = () => {
+            const scene = document.querySelector('a-scene');
+            if (scene && scene.resize) scene.resize();
+            if (typeof InputManager !== 'undefined' && InputManager.refreshCursor) InputManager.refreshCursor();
+        };
+        window.addEventListener('orientationchange', () => setTimeout(resize, 350));
+        window.addEventListener('resize', () => setTimeout(resize, 100));
     },
 };
 

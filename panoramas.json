@@ -1,27 +1,23 @@
 [
     {
         "id": "menu_principal.png",
-        "title": "EL SARC?FAGO"
+        "title": "EL SARC\u00d3FAGO"
     },
     {
         "id": "control_room_1.png",
-        "title": "SALA DE CONTROL 1"
+        "title": "SALA DE CONTROL"
     },
     {
         "id": "control_room_2.png",
-        "title": "SALA DE CONTROL 2"
+        "title": "PANELES DE SEGURIDAD"
     },
     {
         "id": "control_room_3.png",
-        "title": "SALA DE CONTROL 3"
+        "title": "SALA DE CONTROL ALTERADA"
     },
     {
         "id": "control_room_3_quemado.png",
-        "title": "SALA DE CONTROL 3 (QUEMADO)"
-    },
-    {
-        "id": "control_room_4.png",
-        "title": "SALA DE CONTROL 4"
+        "title": "SALA DE CONTROL 3 (DA\u00d1O)"
     },
     {
         "id": "reactor_control_rods_zone.png",
@@ -29,7 +25,7 @@
     },
     {
         "id": "reactor_explosion_moment.png",
-        "title": "MOMENTO DE LA EXPLOSI?N"
+        "title": "MOMENTO DE LA EXPLOSI\u00d3N"
     },
     {
         "id": "reactor_roof.png",

@@ -36,11 +36,10 @@ Los audios no abren paneles. Los paneles informativos aparecen cerca de la altur
 | Imagen | Lugar |
 | --- | --- |
 | `menu_principal.png` | Sarcofago |
-| `control_room_1.png` | Sala de control 1 |
-| `control_room_2.png` | Sala de control 2 |
-| `control_room_3.png` | Sala de control 3 |
-| `control_room_3_quemado.png` | Sala de control quemada |
-| `control_room_4.png` | Zona destruida |
+| `control_room_1.png` | Sala de control |
+| `control_room_2.png` | Paneles de seguridad |
+| `control_room_3.png` | Sala de control alterada |
+| `control_room_3_quemado.png` | Sala de control dañada |
 | `reactor_control_rods_zone.png` | Zona de barras de control |
 | `reactor_explosion_moment.png` | Momento de la explosion |
 | `reactor_roof.png` | Techo del reactor |
@@ -56,7 +55,7 @@ Los audios no abren paneles. Los paneles informativos aparecen cerca de la altur
 | `panoramas.json` | Lista de panoramas disponibles |
 | `Imagenes/` | Panoramas 360 |
 | `Audios/` | Ambiente, efectos y voces |
-| `DIALOGOS_AUDIO.md` | Guiones sugeridos para voces por escena |
+| `AUDIOS_REFINADOS.md` | Audios usados y guiones corregidos |
 
 ## Agregar una escena
 
@@ -74,13 +73,13 @@ Los audios no abren paneles. Los paneles informativos aparecen cerca de la altur
 Ejemplo:
 
 ```js
-{ type: 'audio', target: 'voz_pripyat', pos: '0 -0.35 -3', title: 'EVACUACION' }
+{ type: 'audio', target: 'voz_control_1', pos: '0 -0.35 -3', title: 'CONSOLA AZ-5' }
 ```
 
 Ese hotspot busca este archivo:
 
 ```txt
-Audios/voz_pripyat.mp3
+Audios/voz_control_1.mp3
 ```
 
 ## Notas

@@ -303,8 +303,8 @@
 
     <!-- A-FRAME SCENE -->
     <a-scene id="core-scene"
-        renderer="antialias: true; colorManagement: true; physicallyCorrectLights: true; logarithmicDepthBuffer: true;"
-        vr-mode-ui="enabled: false"
+        renderer="antialias: false; colorManagement: true; precision: mediump; powerPreference: high-performance;"
+        vr-mode-ui="enabled: false; cardboardModeEnabled: true"
         background="color: #000000">
 
         <a-assets id="engine-assets" timeout="30000">
@@ -313,7 +313,6 @@
             <img id="tex-control_room_2-png"        src="./Imagenes/control_room_2.png">
             <img id="tex-control_room_3-png"        src="./Imagenes/control_room_3.png">
             <img id="tex-control_room_3_quemado-png" src="./Imagenes/control_room_3_quemado.png">
-            <img id="tex-control_room_4-png"        src="./Imagenes/control_room_4.png">
             <img id="tex-reactor_control_rods_zone-png" src="./Imagenes/reactor_control_rods_zone.png">
             <img id="tex-reactor_explosion_moment-png" src="./Imagenes/reactor_explosion_moment.png">
             <img id="tex-reactor_roof-png"          src="./Imagenes/reactor_roof.png">
